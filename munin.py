@@ -101,7 +101,7 @@ def _fetch_rrd(filename, start, end, resolution=300, cf='AVERAGE'):
                 pass
 
 
-def get_values(group, host, graph, start, end, resolution=300, minmax=True):
+def get_raw_values(group, host, graph, start, end, resolution=300, minmax=True):
     """Get the data points available from the specified graph."""
     start = int(start / resolution) * resolution
     end = int(end / resolution) * resolution
@@ -117,6 +117,25 @@ def get_values(group, host, graph, start, end, resolution=300, minmax=True):
             for time, value in _fetch_rrd(filename, start, end, resolution, 'MAX'):
                 data[time][field + '.max'] = value
     return [dict(time=k, **v) for k, v in sorted(data.items())]
+
+
+def get_values(group, host, graph, start, end, resolution=300, minmax=True):
+    """Get the data points available from the specified graph."""
+    graph_info = get_info()['%s/%s/%s' % (group, host, graph)]
+    data = get_raw_values(group, host, graph, start, end, resolution, minmax)
+    for field_info in graph_info['fields']:
+        negative = field_info.get('negative')
+        if negative:
+            for row in data:
+                try:
+                    values = [
+                        -row[negative + '.min'],
+                        -row[negative],
+                        -row[negative + '.max']]
+                    row[negative + '.min'], row[negative], row[negative + '.max'] = sorted(values)
+                except KeyError:
+                    pass
+    return data
 
 
 def get_resolutions(group, host, graph):
