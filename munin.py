@@ -3,10 +3,25 @@
 import math
 import os
 import subprocess
+import time
 from collections import defaultdict
+from functools import wraps
 
 
 MUNIN_DBDIR = '/var/lib/munin'
+
+
+def cache(function):
+    """Cache returned data of the decorated function."""
+    data = dict()
+
+    @wraps(function)
+    def wrapper(*args):
+        now = time.time()
+        if args not in data or data[args][1] < now - 300:
+            data[args] = (function(*args), now)
+        return data[args][0]
+    return wrapper
 
 
 def _remove_duplicates(lst):
@@ -18,6 +33,7 @@ def _remove_duplicates(lst):
             yield x
 
 
+@cache
 def get_info():
     """Return a description of all the graphs."""
     data = defaultdict(dict)
