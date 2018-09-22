@@ -85,11 +85,26 @@
   function loadGraph(plot, graph) {
     var traces = [];
     var tracebyfield = {};
+    var stackgroup = 0;
     // prepare the graph configuration
     for (var i = 0; i < graph.fields.length; i++) {
       var field = graph.fields[i];
       var color = field.colour ? '#' + field.colour : default_colors[i];
-      if (field.draw == 'AREA' || field.draw == 'STACK') {
+      if (field.draw == 'AREA' || field.draw == 'STACK' || field.draw == 'AREASTACK') {
+        if (!field.draw.match(/STACK/) && graph.fields[i + 1].draw.match(/STACK/)) {
+          stackgroup += 1;
+        }
+        var trace = {
+          name: field.label || field.name,
+          x: [],
+          y: [],
+          line: {width: 0},
+          fillcolor: color + 'c0',
+          hoverlabel: {bgcolor: color + 'c0'},
+          stackgroup: 'stack' + stackgroup
+        };
+        traces.push(trace);
+        tracebyfield[field.name] = trace;
       } else {
         var trace = {
           name: field.label || field.name,
