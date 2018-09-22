@@ -64,6 +64,11 @@ def get_info():
             negative = field_info.get('negative')
             if negative:
                 fields[negative].pop('graph', None)
+        # expand graph_vlabel
+        graph_vlabel = info.get('graph_vlabel', '')
+        if '${graph_period}' in graph_vlabel:
+            info['graph_vlabel'] = graph_vlabel.replace(
+                '${graph_period}', info.get('graph_period', 'second'))
         info['name'] = name
         info['group'], info['host'], _ = name.split('/')
         graph_order = info.pop('graph_order', '')
@@ -119,6 +124,31 @@ def get_raw_values(group, host, graph, start, end, resolution=300, minmax=True):
     return [dict(time=k, **v) for k, v in sorted(data.items())]
 
 
+cdef_ops = {
+    '+': (lambda a, b: a + b),
+    '-': (lambda a, b: a - b),
+    '*': (lambda a, b: a * b),
+    '/': (lambda a, b: a / b),
+}
+
+
+def cdef_eval(expression, row, suffix=''):
+    tokens = expression.split(',')
+    stack = []
+
+    for token in tokens:
+        if token.isdigit():
+            stack.append(int(token))
+        elif token in cdef_ops:
+            arg2 = stack.pop()
+            arg1 = stack.pop()
+            result = cdef_ops[token](arg1, arg2)
+            stack.append(result)
+        else:
+            stack.append(row[token + suffix])
+    return stack.pop()
+
+
 def get_values(group, host, graph, start, end, resolution=300, minmax=True):
     """Get the data points available from the specified graph."""
     graph_info = get_info()['%s/%s/%s' % (group, host, graph)]
@@ -132,7 +162,23 @@ def get_values(group, host, graph, start, end, resolution=300, minmax=True):
                         -row[negative + '.min'],
                         -row[negative],
                         -row[negative + '.max']]
-                    row[negative + '.min'], row[negative], row[negative + '.max'] = sorted(values)
+                    (
+                        row[negative + '.min'],
+                        row[negative],
+                        row[negative + '.max'],
+                    ) = sorted(values)
+                except KeyError:
+                    pass
+        cdef = field_info.get('cdef')
+        if cdef:
+            field = field_info['name']
+            for row in data:
+                try:
+                    values = [
+                        cdef_eval(cdef, row, '.min'),
+                        cdef_eval(cdef, row),
+                        cdef_eval(cdef, row, '.max')]
+                    row[field + '.min'], row[field], row[field + '.max'] = sorted(values)
                 except KeyError:
                     pass
     return data
