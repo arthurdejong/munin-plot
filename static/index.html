@@ -18,7 +18,7 @@
     '#80c9ff', '#ffc080', '#ffe680', '#aa80ff', '#ee00cc', '#ff8080',
     '#666600', '#ffbfff', '#00ffcc', '#cc6699', '#999900'];
 
-  var layout = {
+  var base_layout = {
     margin: { l: 48, t: 0, r: 32, b: 32 },
     autosize: true,
     showlegend: true,
@@ -35,7 +35,12 @@
       tickfont: {
         size: 10,
         color: '#7f7f7f'
-      }
+      },
+      titlefont: {
+        size: 10,
+        color: '#7f7f7f'
+      },
+      exponentformat: 'SI'
     },
     legend: {
       bgcolor: '#ffffffa0',
@@ -62,9 +67,9 @@
     // toImageButtonOptions
   }
 
-  Plotly.plot('plot1', [], JSON.parse(JSON.stringify(layout)), config);
-  Plotly.plot('plot2', [], JSON.parse(JSON.stringify(layout)), config);
-  Plotly.plot('plot3', [], JSON.parse(JSON.stringify(layout)), config);
+  Plotly.plot('plot1', [], JSON.parse(JSON.stringify(base_layout)), config);
+  Plotly.plot('plot2', [], JSON.parse(JSON.stringify(base_layout)), config);
+  Plotly.plot('plot3', [], JSON.parse(JSON.stringify(base_layout)), config);
 
   var plots = document.getElementsByClassName('myplot');
 
@@ -87,6 +92,14 @@
     var tracebyfield = {};
     var stackgroup = 0;
     // prepare the graph configuration
+    var layout = JSON.parse(JSON.stringify(base_layout));
+    if (graph.graph_vlabel)
+      layout.yaxis.title = graph.graph_vlabel;
+    if (graph.graph_args && graph.graph_args.match(/--logarithmic/)) {
+      layout.yaxis.type = 'log';
+      layout.yaxis.exponentformat = 'E';
+    }
+    // prepare the data series configuration
     for (var i = 0; i < graph.fields.length; i++) {
       var field = graph.fields[i];
       var color = field.colour ? '#' + field.colour : default_colors[i];
@@ -144,7 +157,7 @@
           tracebyfield[field].y.push(Number(row[field]));
         });
       }
-      Plotly.react(plot, traces, JSON.parse(JSON.stringify(layout)), config);
+      Plotly.react(plot, traces, layout, config);
     });
   }
 
