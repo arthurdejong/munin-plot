@@ -1,16 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <title>Graphs</title>
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/open-iconic-bootstrap.min.css" type="text/css" rel="stylesheet">
+  <style type="text/css">
+    #draggablelist .draghandle {
+      cursor: move;
+    }
+    #draggablelist .card {
+      margin: 1em 0;
+    }
+    .card-leftheader {
+      width: 48px;
+      font-size: 18px;
+      line-height: 2em;
+      text-align: center;
+      padding: 10px 15px;
+      margin-bottom: 0;
+      background-color: rgba(0,0,0,.03);
+      border-right: 1px solid rgba(0,0,0,.125);
+      float: left;
+      height: 100%;
+      position: absolute;
+    }
+    .card-rightbody {
+      margin-left: 45px;
+      padding: 5px;
+      float: left;
+      height: 100%;
+      padding-right: 10px;
+    }
+  </style>
 </head>
 <body>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
 
-  <div id="plot1" class="myplot" style="width:90%;height:250px;"></div>
-  <div id="plot2" class="myplot" style="width:90%;height:250px;"></div>
-  <div id="plot3" class="myplot" style="width:90%;height:250px;"></div>
+        <ul id="draggablelist" class="list-unstyled">
 
+          <li class="card">
+            <div class="card-leftheader">
+              <span class="oi oi-move draghandle"></span>
+            </div>
+            <div class="card-rightbody">
+              <div id="plot1" class="myplot" style="width:100%;height:250px;"></div>
+            </div>
+          </li>
+
+          <li class="card">
+            <div class="card-leftheader">
+              <span class="oi oi-move draghandle"></span>
+            </div>
+            <div class="card-rightbody">
+              <div id="plot2" class="myplot" style="width:100%;height:250px;"></div>
+            </div>
+          </li>
+
+          <li class="card">
+            <div class="card-leftheader">
+              <span class="oi oi-move draghandle"></span>
+            </div>
+            <div class="card-rightbody">
+              <div id="plot3" class="myplot" style="width:100%;height:250px;"></div>
+            </div>
+          </li>
+
+        </ul>
+
+      </div>
+    </div>
+  </div>
+  <script type="text/javascript" src="js/jquery-2.2.4.min.js"></script>
+  <script type="text/javascript" src="js/jquery-ui-1.12.1.min.js"></script>
+  <script type="text/javascript" src="js/popper.min.js"></script>
+  <script type="text/javascript" src="js/bootstrap.min.js"></script>
   <script type="text/javascript" src="js/plotly-1.41.0.min.js"></script>
 <script type="text/javascript">
 
+  $(document).ready(function() {
+    jQuery(function($) {
+      var panelList = $('#draggablelist');
+      panelList.sortable({
+        handle: '.draghandle',
+        update: function() {
+          $('.panel', panelList).each(function(index, elem) {
+            var $listItem = $(elem), newIndex = $listItem.index();
+          });
+        }
+      });
+    });
+  });
   var default_colors = [
     '#00cc00', '#0066b3', '#ff8000', '#ffcc00', '#330099', '#990099',
     '#ccff00', '#ff0000', '#808080', '#008f00', '#00487d', '#b35a00',
