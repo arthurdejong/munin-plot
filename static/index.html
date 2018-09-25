@@ -33,6 +33,15 @@
       height: 100%;
       padding-right: 10px;
     }
+    #graphselect {
+      max-height: 200px;
+      margin-bottom: 10px;
+      overflow-y: scroll;
+      -webkit-overflow-scrolling: touch;
+    }
+    #graphselect a {
+      padding: .25rem 1.25rem;
+    }
   </style>
 </head>
 <body>
@@ -70,6 +79,36 @@
           </li>
 
         </ul>
+
+        <div class="row">
+          <div class="col col-sm-1">
+            <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#addgraph" aria-expanded="false" aria-controls="addgraph"><span class="oi oi-plus"></span></button>
+          </div>
+          <div class="col col-sm-8">
+            <div class="collapse" id="addgraph">
+              <div class="card card-body">
+                <div class="row">
+                  <div class="col col-md-6">
+                    <select id="hostselect" class="form-control form-control-sm">
+                      <option value="">All hosts</option>
+                    </select>
+                  </div>
+                  <div class="col col-md-6">
+                    <select id="categoryselect" class="form-control form-control-sm">
+                      <option value="">All categories</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col col-md-12">
+                    <div id="graphselect" class="list-group">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
       </div>
     </div>
@@ -244,6 +283,83 @@
     });
   }
 
+  // update the select widget to be able to list the known graphs
+  function updateSelect(graphs) {
+    // make lists of groups, hosts and categories
+    var hosts = {};
+    var categories = [];
+    for (var graph in graphs) {
+      var parts = graph.split('/')
+      if (!hosts[parts[0]])
+        hosts[parts[0]] = []
+      if (hosts[parts[0]].indexOf(parts[1]) < 0)
+        hosts[parts[0]].push(parts[1]);
+      if (graphs[graph].category && categories.indexOf(graphs[graph].category) < 0)
+        categories.push(graphs[graph].category);
+    }
+    // update options in host selector
+    var groups = Object.keys(hosts);
+    groups.sort();
+    var hostselect = document.getElementById('hostselect');
+    for (var i = 0; i < groups.length; i++) {
+      var group = groups[i];
+      var groupelement = document.createElement('optgroup');
+      groupelement.setAttribute('label', group);
+      hosts[group].sort();
+      for (var j = 0; j < hosts[group].length; j++) {
+        var hostelement = document.createElement('option');
+        hostelement.setAttribute('value', group + '/' + hosts[group][j]);
+        hostelement.textContent = hosts[group][j];
+        groupelement.appendChild(hostelement);
+      }
+      hostselect.appendChild(groupelement);
+    }
+    // update options in category selector
+    categories.sort();
+    var categoryselect = document.getElementById('categoryselect');
+    for (var i = 0; i < categories.length; i++) {
+      var categoryelement = document.createElement('option');
+      categoryelement.setAttribute('value', categories[i]);
+      categoryelement.textContent = categories[i];
+      categoryselect.appendChild(categoryelement);
+    }
+    // build list of graphs
+    var graphnames = Object.keys(graphs);
+    graphnames.sort();
+    // handler for updating the choices in the graph select
+    function updateGraphList() {
+      var host = hostselect.options[hostselect.selectedIndex].value;
+      var category = categoryselect.options[categoryselect.selectedIndex].value;
+      var graphselect = document.getElementById('graphselect');
+      graphselect.innerHTML = '';
+      graphnames.forEach(function(graph) {
+        if (host && !graph.startsWith(host))
+          return;
+        if (category && graphs[graph].category != category)
+          return;
+        var graphelement = document.createElement('a');
+        graphelement.setAttribute('href', '#');
+        graphelement.setAttribute('class', 'list-group-item list-group-item-action');
+        graphelement.setAttribute('data-toggle', 'collapse');
+        graphelement.setAttribute('data-target', '#addgraph');
+        graphelement.textContent = graphs[graph].graph_title || graph.split('/')[2];
+        // add the host graph unless a host graph has been selected
+        if (!host) {
+          var hostelement = document.createElement('small');
+          hostelement.textContent = graph.split('/')[1] + ' / ';
+          graphelement.prepend(hostelement);
+        }
+        graphselect.appendChild(graphelement);
+        graphelement.addEventListener('click', function() {
+          console.log(graph);
+        });
+      });
+    }
+    hostselect.addEventListener('change', updateGraphList, false);
+    categoryselect.addEventListener('change', updateGraphList, false);
+    updateGraphList();
+  }
+
   // load all graphs
   var request = new XMLHttpRequest();
   request.overrideMimeType('application/json');
@@ -254,6 +370,7 @@
       loadGraph('plot1', graphs['some.group/host.some.group/cpu']);
       loadGraph('plot2', graphs['some.group/host.some.group/if_inet0']);
       loadGraph('plot3', graphs['some.group/host.some.group/iostat_ios']);
+      updateSelect(graphs);
     }
   };
   request.send(null);
