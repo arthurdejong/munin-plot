@@ -42,6 +42,36 @@
     #graphselect a {
       padding: .25rem 1.25rem;
     }
+    .card-leftheader .dropdown-toggle::after {
+      display: none;
+    }
+    .settings .dropdown-item {
+      padding: 0 1.5rem;
+    }
+    .settings .size {
+      display: inline-block;
+      vertical-align: middle;
+      width: 18px;
+      height: 18px;
+    }
+    .sizesm {
+      width: 100%;
+      height: 30%;
+      margin-top: 30%;
+      background: #212529;
+    }
+    .sizemd {
+      width: 100%;
+      height: 50%;
+      margin-top: 10%;
+      background: #212529;
+    }
+    .sizelg {
+      width: 100%;
+      height: 70%;
+      margin-top: 0;
+      background: #212529;
+    }
   </style>
 </head>
 <body>
@@ -54,27 +84,57 @@
           <li class="card">
             <div class="card-leftheader">
               <span class="oi oi-move draghandle"></span>
+              <span class="settings btn-group dropright">
+                <div class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  <span class="oi oi-wrench"></span>
+                </div>
+                <div class="dropdown-menu">
+                  <a class="dropdown-item" href="#" onclick="setSize('plot1','sm')"><div class="size"><div class="sizesm"></div></div> small</a>
+                  <a class="dropdown-item" href="#" onclick="setSize('plot1','md')"><div class="size"><div class="sizemd"></div></div> medium</a>
+                  <a class="dropdown-item" href="#" onclick="setSize('plot1','lg')"><div class="size"><div class="sizelg"></div></div> large</a>
+                </div>
+              </span>
             </div>
             <div class="card-rightbody">
-              <div id="plot1" class="myplot" style="width:100%;height:250px;"></div>
+              <div id="plot1" class="myplot" style="width:100%;height:150px;"></div>
             </div>
           </li>
 
           <li class="card">
             <div class="card-leftheader">
               <span class="oi oi-move draghandle"></span>
+              <span class="settings btn-group dropright">
+                <div class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  <span class="oi oi-wrench"></span>
+                </div>
+                <div class="dropdown-menu">
+                  <a class="dropdown-item" href="#" onclick="setSize('plot2','sm')"><div class="size"><div class="sizesm"></div></div> small</a>
+                  <a class="dropdown-item" href="#" onclick="setSize('plot2','md')"><div class="size"><div class="sizemd"></div></div> medium</a>
+                  <a class="dropdown-item" href="#" onclick="setSize('plot2','lg')"><div class="size"><div class="sizelg"></div></div> large</a>
+                </div>
+              </span>
             </div>
             <div class="card-rightbody">
-              <div id="plot2" class="myplot" style="width:100%;height:250px;"></div>
+              <div id="plot2" class="myplot" style="width:100%;height:150px;"></div>
             </div>
           </li>
 
           <li class="card">
             <div class="card-leftheader">
               <span class="oi oi-move draghandle"></span>
+              <span class="settings btn-group dropright">
+                <div class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  <span class="oi oi-wrench"></span>
+                </div>
+                <div class="dropdown-menu">
+                  <a class="dropdown-item" href="#" onclick="setSize('plot3','sm')"><div class="size"><div class="sizesm"></div></div> small</a>
+                  <a class="dropdown-item" href="#" onclick="setSize('plot3','md')"><div class="size"><div class="sizemd"></div></div> medium</a>
+                  <a class="dropdown-item" href="#" onclick="setSize('plot3','lg')"><div class="size"><div class="sizelg"></div></div> large</a>
+                </div>
+              </span>
             </div>
             <div class="card-rightbody">
-              <div id="plot3" class="myplot" style="width:100%;height:250px;"></div>
+              <div id="plot3" class="myplot" style="width:100%;height:150px;"></div>
             </div>
           </li>
 
@@ -281,6 +341,17 @@
       }
       Plotly.react(plot, traces, layout, config);
     });
+  }
+
+  function setSize(graph, size) {
+    var graph = document.getElementById(graph);
+    if (size == 'sm')
+      graph.style.height = '150px';
+    else if (size == 'md')
+      graph.style.height = '200px';
+    else
+      graph.style.height = '250px';
+    Plotly.relayout(graph, {});
   }
 
   // update the select widget to be able to list the known graphs
