@@ -13,6 +13,9 @@
     #draggablelist .card {
       margin: 1em 0;
     }
+    #draggablelist .closegraph .size {
+      font-size: 80%;
+    }
     .card-leftheader {
       width: 48px;
       font-size: 18px;
@@ -72,6 +75,9 @@
       margin-top: 0;
       background: #212529;
     }
+    #template {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -80,64 +86,6 @@
       <div class="col-md-12">
 
         <ul id="draggablelist" class="list-unstyled">
-
-          <li class="card">
-            <div class="card-leftheader">
-              <span class="oi oi-move draghandle"></span>
-              <span class="settings btn-group dropright">
-                <div class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  <span class="oi oi-wrench"></span>
-                </div>
-                <div class="dropdown-menu">
-                  <a class="dropdown-item" href="#" onclick="setSize('plot1','sm')"><div class="size"><div class="sizesm"></div></div> small</a>
-                  <a class="dropdown-item" href="#" onclick="setSize('plot1','md')"><div class="size"><div class="sizemd"></div></div> medium</a>
-                  <a class="dropdown-item" href="#" onclick="setSize('plot1','lg')"><div class="size"><div class="sizelg"></div></div> large</a>
-                </div>
-              </span>
-            </div>
-            <div class="card-rightbody">
-              <div id="plot1" class="myplot" style="width:100%;height:150px;"></div>
-            </div>
-          </li>
-
-          <li class="card">
-            <div class="card-leftheader">
-              <span class="oi oi-move draghandle"></span>
-              <span class="settings btn-group dropright">
-                <div class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  <span class="oi oi-wrench"></span>
-                </div>
-                <div class="dropdown-menu">
-                  <a class="dropdown-item" href="#" onclick="setSize('plot2','sm')"><div class="size"><div class="sizesm"></div></div> small</a>
-                  <a class="dropdown-item" href="#" onclick="setSize('plot2','md')"><div class="size"><div class="sizemd"></div></div> medium</a>
-                  <a class="dropdown-item" href="#" onclick="setSize('plot2','lg')"><div class="size"><div class="sizelg"></div></div> large</a>
-                </div>
-              </span>
-            </div>
-            <div class="card-rightbody">
-              <div id="plot2" class="myplot" style="width:100%;height:150px;"></div>
-            </div>
-          </li>
-
-          <li class="card">
-            <div class="card-leftheader">
-              <span class="oi oi-move draghandle"></span>
-              <span class="settings btn-group dropright">
-                <div class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  <span class="oi oi-wrench"></span>
-                </div>
-                <div class="dropdown-menu">
-                  <a class="dropdown-item" href="#" onclick="setSize('plot3','sm')"><div class="size"><div class="sizesm"></div></div> small</a>
-                  <a class="dropdown-item" href="#" onclick="setSize('plot3','md')"><div class="size"><div class="sizemd"></div></div> medium</a>
-                  <a class="dropdown-item" href="#" onclick="setSize('plot3','lg')"><div class="size"><div class="sizelg"></div></div> large</a>
-                </div>
-              </span>
-            </div>
-            <div class="card-rightbody">
-              <div id="plot3" class="myplot" style="width:100%;height:150px;"></div>
-            </div>
-          </li>
-
         </ul>
 
         <div class="row">
@@ -169,6 +117,28 @@
             </div>
           </div>
         </div>
+
+        <ul id="template">
+          <li class="card">
+            <div class="card-leftheader">
+              <span class="oi oi-move draghandle"></span>
+              <span class="settings btn-group dropright">
+                <div class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  <span class="oi oi-wrench"></span>
+                </div>
+                <div class="dropdown-menu">
+                  <a class="dropdown-item setsize" href="#"><div class="size"><div class="sizesm"></div></div> small</a>
+                  <a class="dropdown-item setsize" href="#"><div class="size"><div class="sizemd"></div></div> medium</a>
+                  <a class="dropdown-item setsize" href="#"><div class="size"><div class="sizelg"></div></div> large</a>
+                  <a class="dropdown-item closegraph" href="#"><div class="oi oi-x size"></div> close</a>
+                </div>
+              </span>
+            </div>
+            <div class="card-rightbody">
+              <div class="myplot" style="width:100%;height:150px;"></div>
+            </div>
+          </li>
+        </ul>
 
       </div>
     </div>
@@ -249,24 +219,18 @@
     // toImageButtonOptions
   }
 
-  Plotly.plot('plot1', [], JSON.parse(JSON.stringify(base_layout)), config);
-  Plotly.plot('plot2', [], JSON.parse(JSON.stringify(base_layout)), config);
-  Plotly.plot('plot3', [], JSON.parse(JSON.stringify(base_layout)), config);
-
-  var plots = document.getElementsByClassName('myplot');
-
   // make zoom levels consistent across graphs
-  [].forEach.call(plots, plot => {
-    plot.on('plotly_relayout', function(ed) {
-      [].forEach.call(plots, (plot, i) => {
+  function updateZoom(ed) {
+    [].forEach.call(document.getElementsByClassName('myplot'), plot => {
+      if (plot.layout) {
         let xaxis = plot.layout.xaxis;
         if ((ed['xaxis.range[0]'] && xaxis.range[0] != ed['xaxis.range[0]']) ||
             (ed['xaxis.range[1]'] && xaxis.range[1] != ed['xaxis.range[1]']) ||
             (ed['xaxis.autorange'] && ed['xaxis.autorange'] != xaxis.autorange))
           Plotly.relayout(plot, ed);
-      });
+      }
     });
-  });
+  }
 
   // load graph data into the plot
   function loadGraph(plot, graph) {
@@ -280,6 +244,11 @@
     if (graph.graph_args && graph.graph_args.match(/--logarithmic/)) {
       layout.yaxis.type = 'log';
       layout.yaxis.exponentformat = 'E';
+    }
+    // get x axis zoom from another plot
+    var existingplot = document.querySelectorAll('#draggablelist .myplot')[0];
+    if (existingplot && existingplot.layout && existingplot.layout.xaxis.range) {
+      layout.xaxis.range = [existingplot.layout.xaxis.range[0], existingplot.layout.xaxis.range[1]];
     }
     // prepare the data series configuration
     for (var i = 0; i < graph.fields.length; i++) {
@@ -340,18 +309,40 @@
         });
       }
       Plotly.react(plot, traces, layout, config);
+      // have changes in zoom update other plots
+      plot.on('plotly_relayout', function(ed) { updateZoom(ed) });
     });
   }
 
-  function setSize(graph, size) {
-    var graph = document.getElementById(graph);
-    if (size == 'sm')
-      graph.style.height = '150px';
-    else if (size == 'md')
-      graph.style.height = '200px';
-    else
-      graph.style.height = '250px';
-    Plotly.relayout(graph, {});
+  function addGraph(graph, size='150px') {
+    var clone = document.getElementById('template').firstElementChild.cloneNode(true);
+    var plot = clone.getElementsByClassName('myplot')[0];
+    plot.graph = graph;
+    // set the size changing actions
+    [].forEach.call(clone.getElementsByClassName('setsize'), button => {
+      button.addEventListener('click', function() {
+        if (button.getElementsByClassName('sizesm').length)
+          plot.style.height = '150px';
+        else if (button.getElementsByClassName('sizemd').length)
+          plot.style.height = '200px';
+        else if (button.getElementsByClassName('sizelg').length)
+          plot.style.height = '250px';
+        Plotly.relayout(plot, {});
+      });
+    });
+    // set the wanted size
+    plot.style.height = size;
+    // set the close action
+    [].forEach.call(clone.getElementsByClassName('closegraph'), button => {
+      button.addEventListener('click', function() {
+        Plotly.purge(plot);
+        clone.parentNode.removeChild(clone);
+      });
+    });
+    // load the graph data
+    loadGraph(plot, graph);
+    // show the graph
+    document.getElementById('draggablelist').appendChild(clone);
   }
 
   // update the select widget to be able to list the known graphs
@@ -422,7 +413,7 @@
         }
         graphselect.appendChild(graphelement);
         graphelement.addEventListener('click', function() {
-          console.log(graph);
+          addGraph(graphs[graph]);
         });
       });
     }
@@ -438,9 +429,9 @@
   request.onreadystatechange = function () {
     if (request.readyState == 4 && request.status == '200') {
       var graphs = JSON.parse(request.responseText);
-      loadGraph('plot1', graphs['some.group/host.some.group/cpu']);
-      loadGraph('plot2', graphs['some.group/host.some.group/if_inet0']);
-      loadGraph('plot3', graphs['some.group/host.some.group/iostat_ios']);
+      addGraph(graphs['some.group/host.some.group/cpu']);
+      addGraph(graphs['some.group/host.some.group/if_inet0']);
+      addGraph(graphs['some.group/host.some.group/iostat_ios']);
       updateSelect(graphs);
     }
   };
