@@ -18,7 +18,8 @@ def static_serve(environ, start_response):
     elif path.endswith('.css'):
         content_type = 'text/css'
     start_response('200 OK', [
-        ('Content-Type', content_type)])
+        ('Content-Type', content_type),
+        ('Content-Security-Policy', "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval'; frame-ancestors 'none'")])
     return [open(os.path.join('static', path), 'rb').read()]
 
 
