@@ -48,6 +48,16 @@
     .card-leftheader .dropdown-toggle::after {
       display: none;
     }
+    .graphinfo .dropdown-menu {
+      min-width: 30em;
+    }
+    .graphinfo .dropdown-item {
+      white-space: normal;
+      line-height: 1em;
+    }
+    .graphinfo .dropdown-item:hover, .graphinfo .dropdown-item:focus {
+      background-color: transparent;
+    }
     .settings .dropdown-item {
       padding: 0 1.5rem;
     }
@@ -122,6 +132,13 @@
           <li class="card">
             <div class="card-leftheader">
               <span class="oi oi-move draghandle"></span>
+              <span class="graphinfo btn-group dropright">
+                <div class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  <span class="oi oi-info"></span>
+                </div>
+                <div class="dropdown-menu">
+                </div>
+              </span>
               <span class="settings btn-group dropright">
                 <div class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                   <span class="oi oi-wrench"></span>
@@ -232,6 +249,12 @@
     });
   }
 
+  function htmlescape(text) {
+    var p = document.createElement('p');
+    p.appendChild(document.createTextNode(text));
+    return p.innerHTML;
+  }
+
   // load graph data into the plot
   function loadGraph(plot, graph) {
     var traces = [];
@@ -318,6 +341,14 @@
     var clone = document.getElementById('template').firstElementChild.cloneNode(true);
     var plot = clone.getElementsByClassName('myplot')[0];
     plot.graph = graph;
+    // update the graph info
+    [].forEach.call(clone.querySelectorAll('.graphinfo .dropdown-menu'), em => {
+      var info = '<tt class="dropdown-item">' + htmlescape(graph.group + '/' + graph.host) + '</tt>';
+      info += '<h3 class="dropdown-item">' + graph.graph_title + '</h3>';
+      if (graph.graph_info)
+        info += '<div class="dropdown-item">' + htmlescape(graph.graph_info) + '</div>';
+      em.innerHTML = info;
+    });
     // set the size changing actions
     [].forEach.call(clone.getElementsByClassName('setsize'), button => {
       button.addEventListener('click', function() {
