@@ -1,0 +1,81 @@
+#draggablelist .draghandle {
+  cursor: move;
+}
+#draggablelist .card {
+  margin: 1em 0;
+}
+#draggablelist .closegraph .size {
+  font-size: 80%;
+}
+.card-leftheader {
+  width: 48px;
+  font-size: 18px;
+  line-height: 2em;
+  text-align: center;
+  padding: 10px 15px;
+  margin-bottom: 0;
+  background-color: rgba(0,0,0,.03);
+  border-right: 1px solid rgba(0,0,0,.125);
+  float: left;
+  height: 100%;
+  position: absolute;
+}
+.card-rightbody {
+  margin-left: 45px;
+  padding: 5px;
+  float: left;
+  height: 100%;
+  padding-right: 10px;
+}
+#graphselect {
+  max-height: 200px;
+  margin-bottom: 10px;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+}
+#graphselect a {
+  padding: .25rem 1.25rem;
+}
+.card-leftheader .dropdown-toggle::after {
+  display: none;
+}
+.graphinfo .dropdown-menu {
+  min-width: 30em;
+}
+.graphinfo .dropdown-item {
+  white-space: normal;
+  line-height: 1em;
+}
+.graphinfo .dropdown-item:hover, .graphinfo .dropdown-item:focus {
+  background-color: transparent;
+}
+.settings .dropdown-item {
+  padding: 0 1.5rem;
+}
+.settings .size {
+  display: inline-block;
+  vertical-align: middle;
+  width: 18px;
+  height: 18px;
+}
+.sizesm {
+  width: 100%;
+  height: 30%;
+  margin-top: 30%;
+  background: #212529;
+}
+.sizemd {
+  width: 100%;
+  height: 50%;
+  margin-top: 10%;
+  background: #212529;
+}
+.sizelg {
+  width: 100%;
+  height: 70%;
+  margin-top: 0;
+  background: #212529;
+}
+#template {
+  display: none;
+}
