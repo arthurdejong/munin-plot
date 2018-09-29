@@ -41,10 +41,10 @@ var default_colors = [
   '#666600', '#ffbfff', '#00ffcc', '#cc6699', '#999900'];
 
 var base_layout = {
-  margin: { l: 48, t: 0, r: 32, b: 32 },
+  margin: { l: 48, t: 0, r: 8, b: 32 },
   autosize: true,
-  showlegend: true,
-  dragmode: 'zoom',
+  showlegend: false,
+  dragmode: 'pan',
   selectdirection: 'h',
   xaxis: {
     tickfont: {
@@ -85,7 +85,8 @@ var config = {
     'resetScale2d',
     'hoverClosestCartesian',
     'hoverCompareCartesian'
-  ]
+  ],
+  showTips: false
   // toImageButtonOptions
 }
 
@@ -105,14 +106,11 @@ function updateZoom(ed) {
 function htmlescape(text) {
   var p = document.createElement('p');
   p.appendChild(document.createTextNode(text));
-  return p.innerHTML;
+  return p.innerHTML.replace(/"/g, '&quot;');
 }
 
 // load graph data into the plot
-function loadGraph(plot, graph) {
-  var traces = [];
-  var tracebyfield = {};
-  var stackgroup = 0;
+function loadGraph(plot, legend, graph) {
   // prepare the graph configuration
   var layout = JSON.parse(JSON.stringify(base_layout));
   if (graph.graph_vlabel)
@@ -122,20 +120,25 @@ function loadGraph(plot, graph) {
     layout.yaxis.exponentformat = 'E';
   }
   // get x axis zoom from another plot
-  var existingplot = document.querySelectorAll('#draggablelist .myplot')[0];
+  var existingplot = document.querySelector('#draggablelist .myplot');
   if (existingplot && existingplot.layout && existingplot.layout.xaxis.range) {
     layout.xaxis.range = [existingplot.layout.xaxis.range[0], existingplot.layout.xaxis.range[1]];
   }
   // prepare the data series configuration
+  var traces = [];
+  var tracebyfield = {};
+  var stackgroup = 0;
   for (var i = 0; i < graph.fields.length; i++) {
     var field = graph.fields[i];
-    var color = field.colour ? '#' + field.colour : default_colors[i];
+    var color = field.colour ? '#' + field.colour : default_colors[i % default_colors.length];
     if (field.draw == 'AREA' || field.draw == 'STACK' || field.draw == 'AREASTACK') {
-      if (!field.draw.match(/STACK/) && graph.fields[i + 1].draw.match(/STACK/)) {
+      if (!field.draw.match(/STACK/) && (!graph.fields[i + 1] || graph.fields[i + 1].draw.match(/STACK/))) {
         stackgroup += 1;
       }
       var trace = {
+        field_name: field.name,
         name: field.label || field.name,
+        info: field.info || '',
         x: [],
         y: [],
         line: {width: 0},
@@ -147,12 +150,15 @@ function loadGraph(plot, graph) {
       tracebyfield[field.name] = trace;
     } else {
       var trace = {
+        field_name: field.name,
         name: field.label || field.name,
+        info: field.info || '',
         x: [],
         y: [],
         line: {color: color}
       };
       var trace_min = {
+        field_name: field.name,
         x: [],
         y: [],
         showlegend: false,
@@ -160,6 +166,7 @@ function loadGraph(plot, graph) {
         line: {width: 0}
       };
       var trace_max = {
+        field_name: field.name,
         x: [],
         y: [],
         showlegend: false,
@@ -174,6 +181,31 @@ function loadGraph(plot, graph) {
       tracebyfield[field.name + '.max'] = trace_max;
     }
   }
+  // build the legend
+  traces.slice().reverse().forEach(function(trace) {
+    if (trace.showlegend != false) {
+      var legendrow = document.createElement('tr')
+      var style;
+      if (trace.fillcolor)
+        style = 'stroke: ' + trace.fillcolor + ';stroke-width:8';
+      else
+        style = 'stroke: ' + trace.line.color + ';stroke-width:2';
+      legendrow.innerHTML += '<td style="width: 30px;"><svg height="10" width="20"><line x1="0" y1="5" x2="20" y2="5" style="' + style + '" /></svg></td>';
+      legendrow.innerHTML += '<td><span title="' + htmlescape(trace.info) + '">' + htmlescape(trace.name) + '</span></td>';
+      legendrow.innerHTML += '<td></td><td></td><td></td>';
+      legend.getElementsByTagName('tbody')[0].appendChild(legendrow);
+      // handle showing/hiding the trace
+      legendrow.addEventListener('click', function() {
+        visible = (trace.visible == false);
+        legendrow.style.opacity = visible ? 1 : 0.2;
+        plot.data.forEach(function(t) {
+          if (t.field_name == trace.field_name)
+            t.visible = visible;
+        });
+        Plotly.redraw(plot);
+      });
+    }
+  });
   // fetch the data and plot it
   Plotly.d3.csv('data/' + graph.name, function(data) {
     for (var i = 0; i < data.length; i++) {
@@ -193,6 +225,7 @@ function loadGraph(plot, graph) {
 function addGraph(graph, size='150px') {
   var clone = document.getElementById('template').firstElementChild.cloneNode(true);
   var plot = clone.getElementsByClassName('myplot')[0];
+  var legend = clone.getElementsByClassName('mylegend')[0];
   plot.graph = graph;
   // update the graph info
   [].forEach.call(clone.querySelectorAll('.graphinfo .dropdown-menu'), em => {
@@ -205,17 +238,22 @@ function addGraph(graph, size='150px') {
   // set the size changing actions
   [].forEach.call(clone.getElementsByClassName('setsize'), button => {
     button.addEventListener('click', function() {
-      if (button.getElementsByClassName('sizesm').length)
+      if (button.getElementsByClassName('sizesm').length) {
         plot.style.height = '150px';
-      else if (button.getElementsByClassName('sizemd').length)
+        legend.style.height = '150px';
+      } else if (button.getElementsByClassName('sizemd').length) {
         plot.style.height = '200px';
-      else if (button.getElementsByClassName('sizelg').length)
+        legend.style.height = '200px';
+      } else if (button.getElementsByClassName('sizelg').length) {
         plot.style.height = '250px';
+        legend.style.height = '250px';
+      }
       Plotly.relayout(plot, {});
     });
   });
   // set the wanted size
   plot.style.height = size;
+  legend.style.height = size;
   // set the close action
   [].forEach.call(clone.getElementsByClassName('closegraph'), button => {
     button.addEventListener('click', function() {
@@ -224,7 +262,7 @@ function addGraph(graph, size='150px') {
     });
   });
   // load the graph data
-  loadGraph(plot, graph);
+  loadGraph(plot, legend, graph);
   // show the graph
   document.getElementById('draggablelist').appendChild(clone);
 }
@@ -313,9 +351,6 @@ request.open('GET', 'graphs', true);
 request.onreadystatechange = function () {
   if (request.readyState == 4 && request.status == '200') {
     var graphs = JSON.parse(request.responseText);
-    addGraph(graphs['some.group/host.some.group/cpu']);
-    addGraph(graphs['some.group/host.some.group/if_inet0']);
-    addGraph(graphs['some.group/host.some.group/iostat_ios']);
     updateSelect(graphs);
   }
 };

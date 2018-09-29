@@ -101,3 +101,20 @@
 #template {
   display: none;
 }
+.myplot {
+  padding: 0;
+}
+.mylegend {
+  padding: 0;
+  height: 150px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  font-size: 70%;
+}
+.mylegend td {
+  margin: 0;
+  padding: 0;
+  border: none;
+  cursor: pointer;
+}
