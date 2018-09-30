@@ -46,7 +46,7 @@ def static_serve(environ, start_response):
 def list_graphs(environ, start_response):
     start_response('200 OK', [
         ('Content-Type', 'application/json')])
-    return [json.dumps(get_info(), indent=2, sort_keys=True)]
+    return [json.dumps(get_info(), indent=2, sort_keys=True).encode('utf-8')]
 
 
 def _field_key(x):
@@ -66,13 +66,12 @@ def get_data(environ, start_response):
     end = time.time()
     start = end - 24 * 60 * 60 * 7
     values = get_values(group, host, graph, start, end)
-    keys = values[0].keys()
-    keys.remove('time')
+    keys = (x for x in values[0].keys() if x != 'remove')
     keys = ['time'] + sorted(keys, key=_field_key)
-    yield '%s\n' % (','.join(keys))
+    yield ('%s\n' % (','.join(keys))).encode('utf-8')
     for value in values:
         value['time'] = datetime.datetime.fromtimestamp(value['time']).strftime('%Y-%m-%d %H:%M:%S')
-        yield '%s\n' % (','.join(str(value.get(key, '')) for key in keys))
+        yield ('%s\n' % (','.join(str(value.get(key, '')) for key in keys))).encode('utf-8')
 
 
 def application(environ, start_response):

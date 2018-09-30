@@ -71,7 +71,7 @@ def get_info():
     for name, info in data.items():
         # collect field information
         fields = dict()
-        for key, value in info.items():
+        for key, value in list(info.items()):
             if '.' in key:
                 info.pop(key)
                 field, key = key.split('.', 1)
@@ -115,7 +115,7 @@ def _fetch_rrd(filename, start, end, resolution=300, cf='AVERAGE'):
     output = subprocess.check_output([
         'rrdtool', 'fetch', os.path.join(MUNIN_DBDIR, filename),
         cf, '-r', str(resolution), '-s', str(start), '-e', str(end)])
-    for line in output.splitlines():
+    for line in output.decode('utf-8').splitlines():
         if ':' in line:
             try:
                 time, value = line.split(':', 1)
