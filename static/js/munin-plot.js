@@ -47,10 +47,12 @@ var base_layout = {
   dragmode: 'pan',
   selectdirection: 'h',
   xaxis: {
+    type: 'date',
     tickfont: {
       size: 10,
       color: '#7f7f7f'
-    }
+    },
+    hoverformat: '%a %Y-%m-%d %H:%M'
   },
   yaxis: {
     fixedrange: true,
@@ -62,7 +64,8 @@ var base_layout = {
       size: 10,
       color: '#7f7f7f'
     },
-    exponentformat: 'SI'
+    exponentformat: 'SI',
+    hoverformat: '.4s'
   },
   legend: {
     bgcolor: '#ffffffa0',
@@ -90,23 +93,46 @@ var config = {
   // toImageButtonOptions
 }
 
-// make zoom levels consistent across graphs
-function updateZoom(ed) {
-  [].forEach.call(document.getElementsByClassName('myplot'), plot => {
-    if (plot.layout) {
-      let xaxis = plot.layout.xaxis;
-      if ((ed['xaxis.range[0]'] && xaxis.range[0] != ed['xaxis.range[0]']) ||
-          (ed['xaxis.range[1]'] && xaxis.range[1] != ed['xaxis.range[1]']) ||
-          (ed['xaxis.autorange'] && ed['xaxis.autorange'] != xaxis.autorange))
-        Plotly.relayout(plot, ed);
-    }
-  });
-}
-
 function htmlescape(text) {
   var p = document.createElement('p');
   p.appendChild(document.createTextNode(text));
   return p.innerHTML.replace(/"/g, '&quot;');
+}
+
+// update the legend
+function updateLegend(plot, tracebyfield, legendbyfield) {
+  var [minx, maxx] = plot.layout.xaxis.range;
+  Object.keys(legendbyfield).forEach(function(field) {
+    var columns = legendbyfield[field].getElementsByTagName('td');
+    // calculate minimum
+    var mintrace = tracebyfield[field + '.min'];
+    var minvalue = Math.min.apply(null, mintrace.y.filter(function (el, idx) {
+      var x = mintrace.x[idx];
+      return x >= minx && x <= maxx;
+    }));
+    // calculate average
+    var avgtrace = tracebyfield[field];
+    var avgvalue = avgtrace.y.map(function (current, idx) {
+      var x = avgtrace.x[idx];
+      if (idx > 0 && x >= minx && x <= maxx)
+        return [current, Date.parse(x) - Date.parse(avgtrace.x[idx - 1])];
+      else
+        return [current, 0];
+    }).reduce(function(acc, current, currentIndex, array) {
+      return [acc[0] + (current[0] * current[1]), acc[1] + current[1]];
+    });
+    avgvalue = avgvalue[0] / avgvalue[1];
+    // calculate maximum
+    var maxtrace = tracebyfield[field + '.max'];
+    var maxvalue = Math.max.apply(null, maxtrace.y.filter(function (el, idx) {
+      var x = maxtrace.x[idx];
+      return x >= minx && x <= maxx;
+    }));
+    // update legend
+    columns[2].textContent = (isNaN(minvalue) || !isFinite(minvalue)) ? '-' : Plotly.d3.format('.4s')(minvalue);
+    columns[3].textContent = (isNaN(avgvalue) || !isFinite(avgvalue)) ? '-' : Plotly.d3.format('.4s')(avgvalue);
+    columns[4].textContent = (isNaN(maxvalue) || !isFinite(maxvalue)) ? '-' : Plotly.d3.format('.4s')(maxvalue);
+  });
 }
 
 // load graph data into the plot
@@ -146,8 +172,18 @@ function loadGraph(plot, legend, graph) {
         hoverlabel: {bgcolor: color + 'c0'},
         stackgroup: 'stack' + stackgroup
       };
+      var trace_min = {
+        x: [],
+        y: []
+      };
+      var trace_max = {
+        x: [],
+        y: []
+      };
       traces.push(trace);
       tracebyfield[field.name] = trace;
+      tracebyfield[field.name + '.min'] = trace_min;
+      tracebyfield[field.name + '.max'] = trace_max;
     } else {
       var trace = {
         field_name: field.name,
@@ -155,7 +191,8 @@ function loadGraph(plot, legend, graph) {
         info: field.info || '',
         x: [],
         y: [],
-        line: {color: color}
+        line: {color: color},
+        hoverlabel: {bgcolor: color + 'c0'}
       };
       var trace_min = {
         field_name: field.name,
@@ -182,6 +219,7 @@ function loadGraph(plot, legend, graph) {
     }
   }
   // build the legend
+  var legendbyfield = {};
   traces.slice().reverse().forEach(function(trace) {
     if (trace.showlegend != false) {
       var legendrow = document.createElement('tr')
@@ -194,6 +232,7 @@ function loadGraph(plot, legend, graph) {
       legendrow.innerHTML += '<td><span title="' + htmlescape(trace.info) + '">' + htmlescape(trace.name) + '</span></td>';
       legendrow.innerHTML += '<td></td><td></td><td></td>';
       legend.getElementsByTagName('tbody')[0].appendChild(legendrow);
+      legendbyfield[trace.field_name] = legendrow;
       // handle showing/hiding the trace
       legendrow.addEventListener('click', function() {
         visible = (trace.visible == false);
@@ -217,8 +256,22 @@ function loadGraph(plot, legend, graph) {
       });
     }
     Plotly.react(plot, traces, layout, config);
-    // have changes in zoom update other plots
-    plot.on('plotly_relayout', function(ed) { updateZoom(ed) });
+    updateLegend(plot, tracebyfield, legendbyfield);
+    // handle plot changes
+    plot.on('plotly_relayout', function(ed) {
+      // make zoom levels consistent across graphs
+      [].forEach.call(document.getElementsByClassName('myplot'), plot => {
+        if (plot.layout) {
+          let xaxis = plot.layout.xaxis;
+          if ((ed['xaxis.range[0]'] && xaxis.range[0] != ed['xaxis.range[0]']) ||
+              (ed['xaxis.range[1]'] && xaxis.range[1] != ed['xaxis.range[1]']) ||
+              (ed['xaxis.autorange'] && ed['xaxis.autorange'] != xaxis.autorange))
+            Plotly.relayout(plot, ed);
+        }
+      });
+      // update the legend values
+      updateLegend(plot, tracebyfield, legendbyfield);
+    });
   });
 }
 
