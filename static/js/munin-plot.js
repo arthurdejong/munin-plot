@@ -243,7 +243,28 @@ function loadGraph(plot, legend, graph) {
         });
         Plotly.redraw(plot);
       });
+      // highlight the trace by lowering the opacity of the others
+      legendrow.addEventListener('mouseover', function() {
+        var vals = plot.data.map(t => t.field_name == trace.field_name ? 1 : 0.1);
+        Plotly.restyle(plot, 'opacity', vals);
+        var vals = plot.data.map(function(t) {
+          if (t.showlegend === false)
+            return t.fillcolor;
+          return (t.fillcolor || '#ffffff').substring(0, 7) + (t.field_name == trace.field_name ? 'ff' : '30');
+        });
+        Plotly.restyle(plot, 'fillcolor', vals);
+      });
     }
+  });
+  // reset opacity after exiting the legend
+  legend.addEventListener('mouseout', function() {
+    Plotly.restyle(plot, 'opacity', plot.data.map(t => 1));
+    var vals = plot.data.map(function(t) {
+      if (t.showlegend === false)
+        return t.fillcolor;
+      return (t.fillcolor || '#ffffff').substring(0, 7) + 'c0';
+    });
+    Plotly.restyle(plot, 'fillcolor', vals);
   });
   // fetch the data and plot it
   Plotly.d3.csv('data/' + graph.name, function(data) {
