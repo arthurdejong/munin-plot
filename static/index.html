@@ -32,41 +32,12 @@
 </head>
 <body>
   <div class="container-fluid">
+    <div class="row loadingrow"><div class="col-sm-2"></div><div class="col-sm-8"><div class="loading"></div><h3>LOADING</h3></div></div>
     <div class="row">
       <div class="col-md-12">
 
         <ul id="draggablelist" class="list-unstyled">
         </ul>
-
-        <div class="row addgraph">
-          <div class="col col-sm-1">
-            <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#addgraph" aria-expanded="false" aria-controls="addgraph"><span class="oi oi-plus"></span></button>
-          </div>
-          <div class="col col-sm-8">
-            <div class="collapse" id="addgraph">
-              <div class="card card-body">
-                <div class="row">
-                  <div class="col col-md-6">
-                    <select id="hostselect" class="form-control form-control-sm">
-                      <option value="">All hosts</option>
-                    </select>
-                  </div>
-                  <div class="col col-md-6">
-                    <select id="categoryselect" class="form-control form-control-sm">
-                      <option value="">All categories</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col col-md-12">
-                    <div id="graphselect" class="list-group">
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
         <ul id="template">
           <li class="card">
@@ -110,6 +81,39 @@
 
       </div>
     </div>
+
+
+    <div class="row addgraph">
+      <div class="col col-sm-1">
+        <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#addgraph" aria-expanded="false" aria-controls="addgraph"><span class="oi oi-plus"></span></button>
+      </div>
+      <div class="col col-sm-8">
+        <div class="collapse" id="addgraph">
+          <div class="card card-body">
+            <div class="row">
+              <div class="col col-md-6">
+                <select id="hostselect" class="form-control form-control-sm">
+                  <option value="">All hosts</option>
+                </select>
+              </div>
+              <div class="col col-md-6">
+                <select id="categoryselect" class="form-control form-control-sm">
+                  <option value="">All categories</option>
+                </select>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col col-md-12">
+                <div id="graphselect" class="list-group">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
   </div>
   <script type="text/javascript" src="js/jquery-2.2.4.min.js"></script>
   <script type="text/javascript" src="js/jquery-ui-1.12.1.min.js"></script>

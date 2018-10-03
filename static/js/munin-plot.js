@@ -426,6 +426,8 @@ request.onreadystatechange = function () {
   if (request.readyState == 4 && request.status == '200') {
     var graphs = JSON.parse(request.responseText);
     updateSelect(graphs);
+    document.getElementsByClassName('addgraph')[0].style.display = 'flex';
+    document.getElementsByClassName('loadingrow')[0].style.display = 'none';
   }
 };
 request.send(null);
