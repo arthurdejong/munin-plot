@@ -64,9 +64,10 @@ def get_info():
                 source, line = line.split(':', 1)
                 group, host = source.split(';')
                 key, value = line.split(' ', 1)
-                graph, key = key.split('.', 1)
-                name = '%s/%s/%s' % (group, host, graph)
-                data[name][key] = value.strip()
+                if '.' in key:
+                    graph, key = key.split('.', 1)
+                    name = '%s/%s/%s' % (group, host, graph)
+                    data[name][key] = value.strip()
     # restructure graph info
     for name, info in data.items():
         # collect field information
