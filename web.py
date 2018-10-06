@@ -18,6 +18,7 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
+import cgi
 import datetime
 import json
 import os
@@ -58,20 +59,53 @@ def _field_key(x):
     return x + '.1'
 
 
+def _parse_timestamp(timestamp):
+    """Return a timestamp value from the specified string."""
+    formats = (
+        '%Y-%m-%d %H:%M:%S',
+        '%Y-%m-%d %H:%M',
+        '%Y-%m-%d')
+    for fmt in formats:
+        try:
+            return time.mktime(time.strptime(timestamp, fmt))
+        except ValueError:
+            pass
+    raise ValueError('time data %r does not match any known format' % timestamp)
+
+
 def get_data(environ, start_response):
     path = environ.get('PATH_INFO', '').lstrip('/')
     _, group, host, graph = path.split('/')
+    last_update, resolutions = get_resolutions(group, host, graph)
+    parameters = cgi.parse_qs(environ.get('QUERY_STRING', ''))
+    # get the time range to fetch the data for
+    end = parameters.get('end')
+    end = _parse_timestamp(end[0]) if end else last_update
+    start = parameters.get('start')
+    start = _parse_timestamp(start[0]) if start else end - 24 * 60 * 60 * 7
+    # calculate the minimum resolution that we want
+    resolution = min((
+        parameters.get('resolution', (end - start) / 5000),
+        resolutions[-1][0]))
+    # loop over resolutions to find the data
+    values = []
+    for res, rows in resolutions:
+        if res >= resolution:
+            s = max((last_update - res * rows, start))
+            e = min((last_update, end))
+            if e > s:
+                values = get_values(group, host, graph, s, e, res) + values
+                end = s
+    # return the values as CSV
     start_response('200 OK', [
         ('Content-Type', 'text/plain')])
-    end = time.time()
-    start = end - 24 * 60 * 60 * 7
-    values = get_values(group, host, graph, start, end)
-    keys = (x for x in values[0].keys() if x != 'remove')
-    keys = ['time'] + sorted(keys, key=_field_key)
-    yield ('%s\n' % (','.join(keys))).encode('utf-8')
-    for value in values:
-        value['time'] = datetime.datetime.fromtimestamp(value['time']).strftime('%Y-%m-%d %H:%M:%S')
-        yield ('%s\n' % (','.join(str(value.get(key, '')) for key in keys))).encode('utf-8')
+    if values:
+        keys = (x for x in values[0].keys() if x != 'remove')
+        keys = ['time'] + sorted((k for k in keys if k != 'time'), key=_field_key)
+        yield ('%s\n' % (','.join(keys))).encode('utf-8')
+        for value in values:
+            value['time'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(value['time']))
+            yield ('%s\n' % (','.join(str(value.get(key, '')) for key in keys))).encode('utf-8')
 
 
 def application(environ, start_response):

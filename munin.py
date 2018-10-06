@@ -210,13 +210,18 @@ def get_resolutions(group, host, graph):
     f = _get_rrd_files(group, host, graph)[0]
     output = subprocess.check_output([
         'rrdtool', 'info', os.path.join(MUNIN_DBDIR, group, f)])
-    resolutions = set()
-    for line in output.splitlines():
+    resolutions = {}
+    rows = {}
+    for line in output.decode('utf-8').splitlines():
         if line.startswith('step = '):
             # the measurement resolution
             step = int(line.split(' = ')[1])
-            resolutions.add(step)
-        if 'pdp_per_row' in line:
+        elif line.startswith('last_update = '):
+            last_update = int(line.split(' = ')[1])
+            last_update = int(last_update / step) * step
+        elif '.pdp_per_row = ' in line:
             pdp_per_row = int(line.split(' = ')[1])
-            resolutions.add(pdp_per_row * step)
-    return sorted(resolutions)
+            resolutions[pdp_per_row * step] = line.split('.')[0]
+        elif '.rows = ' in line:
+            rows[line.split('.')[0]] = int(line.split(' = ')[1])
+    return last_update, [(r, rows[i]) for r, i in sorted(resolutions.items())]
