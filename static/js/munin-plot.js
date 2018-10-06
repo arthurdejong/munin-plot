@@ -276,6 +276,7 @@ function loadGraph(plot, legend, graph) {
         tracebyfield[field].y.push(Number(row[field]));
       });
     }
+    plot.innerHTML = '';
     Plotly.react(plot, traces, layout, config);
     updateLegend(plot, tracebyfield, legendbyfield);
     // handle plot changes
