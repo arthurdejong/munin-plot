@@ -71,7 +71,8 @@ var base_layout = {
     bgcolor: '#ffffffa0',
     xanchor: 'auto',
     x: 1.2
-  }
+  },
+  datarevision: 1
 };
 
 var config = {
@@ -92,6 +93,9 @@ var config = {
   showTips: false
   // toImageButtonOptions
 }
+
+// whether new data should be loaded
+var updatedata = false;
 
 function htmlescape(text) {
   var p = document.createElement('p');
@@ -153,6 +157,7 @@ function loadGraph(plot, legend, graph) {
   // prepare the data series configuration
   var traces = [];
   var tracebyfield = {};
+  plot.tracebyfield = tracebyfield;
   var stackgroup = 0;
   for (var i = 0; i < graph.fields.length; i++) {
     var field = graph.fields[i];
@@ -165,47 +170,31 @@ function loadGraph(plot, legend, graph) {
         field_name: field.name,
         name: field.label || field.name,
         info: field.info || '',
-        x: [],
-        y: [],
         line: {width: 0},
         fillcolor: color + 'c0',
         hoverlabel: {bgcolor: color + 'c0'},
         stackgroup: 'stack' + stackgroup
       };
-      var trace_min = {
-        x: [],
-        y: []
-      };
-      var trace_max = {
-        x: [],
-        y: []
-      };
       traces.push(trace);
       tracebyfield[field.name] = trace;
-      tracebyfield[field.name + '.min'] = trace_min;
-      tracebyfield[field.name + '.max'] = trace_max;
+      tracebyfield[field.name + '.min'] = {};
+      tracebyfield[field.name + '.max'] = {};
     } else {
       var trace = {
         field_name: field.name,
         name: field.label || field.name,
         info: field.info || '',
-        x: [],
-        y: [],
         line: {color: color},
         hoverlabel: {bgcolor: color + 'c0'}
       };
       var trace_min = {
         field_name: field.name,
-        x: [],
-        y: [],
         showlegend: false,
         hoverinfo: 'skip',
         line: {width: 0}
       };
       var trace_max = {
         field_name: field.name,
-        x: [],
-        y: [],
         showlegend: false,
         hoverinfo: 'skip',
         line: {width: 0},
@@ -218,6 +207,11 @@ function loadGraph(plot, legend, graph) {
       tracebyfield[field.name + '.max'] = trace_max;
     }
   }
+  // make placeholders for data in traces
+  Object.keys(tracebyfield).forEach(function(field) {
+    tracebyfield[field].x = [];
+    tracebyfield[field].y = [];
+  });
   // build the legend
   var legendbyfield = {};
   traces.slice().reverse().forEach(function(trace) {
@@ -279,8 +273,10 @@ function loadGraph(plot, legend, graph) {
     plot.innerHTML = '';
     Plotly.react(plot, traces, layout, config);
     updateLegend(plot, tracebyfield, legendbyfield);
+    updatedata = true;
     // handle plot changes
     plot.on('plotly_relayout', function(ed) {
+      updatedata = true;
       // make zoom levels consistent across graphs
       [].forEach.call(document.getElementsByClassName('myplot'), plot => {
         if (plot.layout) {
@@ -296,6 +292,89 @@ function loadGraph(plot, legend, graph) {
     });
   });
 }
+
+// check if the axis match the data range and load more data as needed
+function checkDataUpdates() {
+  try {
+    if (updatedata) {
+      updatedata = false;
+      // go over all plots
+      [].forEach.call(document.getElementsByClassName('myplot'), plot => {
+        if (plot && plot.layout) {
+          // range of the x axis
+          var [amin, amax] = plot.layout.xaxis.range;
+          // range of the currently loaded data
+          var dmin = plot.data.map(t => t.x[0]).reduce((a, c) => a < c ? a : c);
+          var dmax = plot.data.map(t => t.x[t.x.length - 1]).reduce((a, c) => a > c ? a : c);
+          // range that we have marked as loaded
+          // (to avoid retrying to load data that isn't there)
+          if (!plot.lmin)
+            plot.lmin = dmin;
+          if (!plot.lmax)
+            plot.lmax = dmax;
+          // see if we need to load data before the currently loaded range
+          if (amin < plot.lmin) {
+            plot.lmin = amin;
+            Plotly.d3.csv('data/' + plot.graph.name + '?start=' + amin.split('.')[0] + '&end=' + dmin.split('.')[0], function(data) {
+              // prepend new data
+              if (data) {
+                for (var i = data.length - 1; i >= 0; i--) {
+                  row = data[i];
+                  time = row['time'];
+                  Object.keys(plot.tracebyfield).forEach(function(field) {
+                    var trace = plot.tracebyfield[field];
+                    if (time < trace.x[0]) {
+                      trace.x.splice(0, 0, time);
+                      trace.y.splice(0, 0, Number(row[field]));
+                    }
+                  });
+                }
+                plot.layout.datarevision += 1;
+                Plotly.react(plot, plot.data, plot.layout);
+              }
+            });
+          }
+          // see if we need to load data paste the currently loaded range
+          if (amax > plot.lmax) {
+            plot.lmax = amax;
+            // load data from dmax to amax and append
+            Plotly.d3.csv('data/' + plot.graph.name + '?start=' + dmax.split('.')[0] + '&end=' + amax.split('.')[0], function(data) {
+              // append new data
+              if (data) {
+                for (var i = 0; i < data.length; i++) {
+                  row = data[i];
+                  time = row['time'];
+                  Object.keys(plot.tracebyfield).forEach(function(field) {
+                    var trace = plot.tracebyfield[field];
+                    if (time > trace.x[trace.x.length - 1]) {
+                      trace.x.push(time);
+                      trace.y.push(Number(row[field]));
+                    }
+                  });
+                }
+                plot.layout.datarevision += 1;
+                Plotly.react(plot, plot.data, plot.layout);
+              }
+            });
+          }
+        }
+      });
+    }
+  } finally {
+    setTimeout(checkDataUpdates, 1000);
+  }
+}
+setTimeout(checkDataUpdates, 1000);
+
+// every minute check if there is any new data
+function checkNewData() {
+  setTimeout(checkNewData, 60000);
+  [].forEach.call(document.getElementsByClassName('myplot'), plot => {
+    plot.lmax = undefined;
+  });
+  updatedata = true;
+}
+setTimeout(checkNewData, 60000);
 
 function addGraph(graph, size='150px') {
   var clone = document.getElementById('template').firstElementChild.cloneNode(true);
