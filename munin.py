@@ -210,9 +210,12 @@ def get_values(group, host, graph, start, end, resolution=300, minmax=True):
 
 def get_resolutions(group, host, graph):
     """Return a list of resolutions available for the graph."""
-    f = _get_rrd_files(group, host, graph)[0]
-    output = subprocess.check_output([
-        'rrdtool', 'info', os.path.join(MUNIN_DBDIR, group, f)])
+    # find the newest file
+    rrdfile = sorted(
+        (os.stat(x).st_mtime, x) for x in (
+            os.path.join(MUNIN_DBDIR, group, y)
+            for y in _get_rrd_files(group, host, graph)))[-1][1]
+    output = subprocess.check_output(['rrdtool', 'info', rrdfile])
     resolutions = {}
     rows = {}
     for line in output.decode('utf-8').splitlines():
