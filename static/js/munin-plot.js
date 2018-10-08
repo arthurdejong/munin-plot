@@ -116,16 +116,19 @@ function updateLegend(plot, tracebyfield, legendbyfield) {
     }));
     // calculate average
     var avgtrace = tracebyfield[field];
-    var avgvalue = avgtrace.y.map(function (current, idx) {
-      var x = avgtrace.x[idx];
-      if (idx > 0 && x >= minx && x <= maxx)
-        return [current, Date.parse(x) - Date.parse(avgtrace.x[idx - 1])];
-      else
-        return [current, 0];
-    }).reduce(function(acc, current, currentIndex, array) {
-      return [acc[0] + (current[0] * current[1]), acc[1] + current[1]];
-    });
-    avgvalue = avgvalue[0] / avgvalue[1];
+    if (avgtrace.y.length) {
+      var avgvalue = avgtrace.y.map(function (current, idx) {
+        var x = avgtrace.x[idx];
+        if (idx > 0 && x >= minx && x <= maxx)
+          return [current, Date.parse(x) - Date.parse(avgtrace.x[idx - 1])];
+        else
+          return [current, 0];
+      }).reduce(function(acc, current, currentIndex, array) {
+        return [acc[0] + (current[0] * current[1]), acc[1] + current[1]];
+      });
+      avgvalue = avgvalue[0] / avgvalue[1];
+    } else
+      avgvalue = undefined;
     // calculate maximum
     var maxtrace = tracebyfield[field + '.max'];
     var maxvalue = Math.max.apply(null, maxtrace.y.filter(function (el, idx) {
