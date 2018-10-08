@@ -22,6 +22,7 @@
 
 import math
 import os
+import re
 import subprocess
 import time
 from collections import defaultdict
@@ -152,14 +153,16 @@ cdef_ops = {
     '/': (lambda a, b: a / b),
 }
 
+cdef_number_re = re.compile(r'^-?[0-9]+(\.[0-9]*)?$')
+
 
 def cdef_eval(expression, row, suffix=''):
+    """Evaluate a cdef expression using variables from row."""
     tokens = expression.split(',')
     stack = []
-
     for token in tokens:
-        if token.isdigit():
-            stack.append(int(token))
+        if cdef_number_re.match(token):
+            stack.append(float(token))
         elif token in cdef_ops:
             arg2 = stack.pop()
             arg1 = stack.pop()
