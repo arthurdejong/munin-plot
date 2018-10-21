@@ -467,16 +467,21 @@ function updateSelect(graphs) {
   // build list of graphs
   var graphnames = Object.keys(graphs);
   graphnames.sort();
+  var graphfilter = document.getElementById('graphfilter');
   // handler for updating the choices in the graph select
   function updateGraphList() {
     var host = hostselect.options[hostselect.selectedIndex].value;
     var category = categoryselect.options[categoryselect.selectedIndex].value;
+    var search = graphfilter.value.toLowerCase().split(' ');
     var graphselect = document.getElementById('graphselect');
     graphselect.innerHTML = '';
     graphnames.forEach(function(graph) {
       if (host && !graph.startsWith(host))
         return;
       if (category && graphs[graph].category != category)
+        return;
+      var descripton = (graph + ' ' + graphs[graph].graph_title + ' ' + graphs[graph].category).toLowerCase();
+      if (search.some(x => !descripton.includes(x)))
         return;
       var graphelement = document.createElement('a');
       graphelement.setAttribute('href', '#');
@@ -495,9 +500,14 @@ function updateSelect(graphs) {
         addGraph(graphs[graph]);
       });
     });
+    graphfilter.focus();
   }
   hostselect.addEventListener('change', updateGraphList, false);
   categoryselect.addEventListener('change', updateGraphList, false);
+  graphfilter.addEventListener('input', updateGraphList, false);
+  document.getElementsByClassName('addgraph')[0].getElementsByClassName('btn')[0].addEventListener('click', function() {
+    setTimeout(function() {graphfilter.focus()}, 100);
+  }, false);
   updateGraphList();
 }
 
