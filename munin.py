@@ -59,7 +59,7 @@ def get_info():
     """Return a description of all the graphs."""
     data = defaultdict(dict)
     # parse the datafile and group by graph
-    with open(os.path.join(MUNIN_DBDIR, 'datafile'), 'rt') as f:
+    with open(os.path.join(MUNIN_DBDIR, 'datafile'), 'rt', encoding='utf-8') as f:
         for line in f:
             if ':' in line:
                 source, line = line.split(':', 1)
