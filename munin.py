@@ -86,6 +86,11 @@ def get_info():
             negative = field_info.get('negative')
             if negative:
                 fields[negative].pop('graph', None)
+            # remove graph = no and replace by removing draw
+            if field_info.pop('graph', '').lower() in ('false', 'no' ,'0'):
+                field_info.pop('draw', None)
+            else:
+                field_info.setdefault('draw', 'LINE')
         # expand graph_vlabel
         graph_vlabel = info.get('graph_vlabel', '')
         if '${graph_period}' in graph_vlabel:

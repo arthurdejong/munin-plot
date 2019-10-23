@@ -182,7 +182,7 @@ function loadGraph(plot, legend, graph) {
       tracebyfield[field.name] = trace;
       tracebyfield[field.name + '.min'] = {};
       tracebyfield[field.name + '.max'] = {};
-    } else {
+    } else if (field.draw) {
       var trace = {
         field_name: field.name,
         name: field.label || field.name,
