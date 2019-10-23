@@ -101,7 +101,8 @@ def get_info():
         graph_order = info.pop('graph_order', '')
         info['fields'] = [
             fields[field]
-            for field in _remove_duplicates(graph_order.split())]
+            for field in _remove_duplicates(graph_order.split())
+            if field in fields]
         category = info.pop('graph_category', '')
         if category:
             info['category'] = category.lower()
@@ -208,7 +209,7 @@ def get_values(group, host, graph, start, end, resolution=300, minmax=True):
                         cdef_eval(cdef, row),
                         cdef_eval(cdef, row, '.max')]
                     row[field + '.min'], row[field], row[field + '.max'] = sorted(values)
-                except KeyError:
+                except Exception:
                     pass
     return data
 
