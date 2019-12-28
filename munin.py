@@ -1,6 +1,6 @@
 # Python module to get data from Munin data files
 
-# Copyright (C) 2018 Arthur de Jong
+# Copyright (C) 2018-2019 Arthur de Jong
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -81,13 +81,13 @@ def get_info():
                 if key not in ('graph_data_size', 'update_rate'):
                     fields[field][key] = value
         # clean up field information
-        for field, field_info in fields.items():
+        for _field, field_info in fields.items():
             # remove graph=no from negative fields
             negative = field_info.get('negative')
             if negative:
                 fields[negative].pop('graph', None)
             # remove graph = no and replace by removing draw
-            if field_info.pop('graph', '').lower() in ('false', 'no' ,'0'):
+            if field_info.pop('graph', '').lower() in ('false', 'no', '0'):
                 field_info.pop('draw', None)
             else:
                 field_info.setdefault('draw', 'LINE')
@@ -142,13 +142,13 @@ def get_raw_values(group, host, graph, start, end, resolution=300, minmax=True):
     for f in _get_rrd_files(group, host, graph):
         field = '-'.join(f.split('-')[2:-1])
         filename = os.path.join(group, f)
-        for time, value in _fetch_rrd(filename, start, end, resolution, 'AVERAGE'):
-            data[time][field] = value
+        for time_, value in _fetch_rrd(filename, start, end, resolution, 'AVERAGE'):
+            data[time_][field] = value
         if minmax:
-            for time, value in _fetch_rrd(filename, start, end, resolution, 'MIN'):
-                data[time][field + '.min'] = value
-            for time, value in _fetch_rrd(filename, start, end, resolution, 'MAX'):
-                data[time][field + '.max'] = value
+            for time_, value in _fetch_rrd(filename, start, end, resolution, 'MIN'):
+                data[time_][field + '.min'] = value
+            for time_, value in _fetch_rrd(filename, start, end, resolution, 'MAX'):
+                data[time_][field + '.max'] = value
     return [dict(time=k, **v) for k, v in sorted(data.items())]
 
 

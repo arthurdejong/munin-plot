@@ -1,4 +1,4 @@
-# Copyright (C) 2018 Arthur de Jong
+# Copyright (C) 2018-2019 Arthur de Jong
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -19,13 +19,13 @@
 # DEALINGS IN THE SOFTWARE.
 
 import cgi
-import datetime
 import json
 import os
 import sys
 import time
 
-from munin import *
+from munin import get_info, get_resolutions, get_values
+
 
 sys.stdout = sys.stderr
 
@@ -38,9 +38,11 @@ def static_serve(environ, start_response):
         content_type = 'text/javascript'
     elif path.endswith('.css'):
         content_type = 'text/css'
+    csp = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; " + \
+          "script-src 'self' 'unsafe-eval'; frame-ancestors 'none'"
     start_response('200 OK', [
         ('Content-Type', content_type),
-        ('Content-Security-Policy', "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval'; frame-ancestors 'none'")])
+        ('Content-Security-Policy', csp)])
     return [open(os.path.join('static', path), 'rb').read()]
 
 
