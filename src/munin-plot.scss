@@ -1,0 +1,176 @@
+@import "~bootstrap/scss/bootstrap";
+$icon-font-path: "~open-iconic/font/fonts/";
+@import "~open-iconic/font/css/open-iconic-bootstrap.scss";
+
+/*!
+  Copyright (C) 2018 Arthur de Jong
+
+  Permission is hereby granted, free of charge, to any person obtaining a
+  copy of this software and associated documentation files (the "Software"),
+  to deal in the Software without restriction, including without limitation
+  the rights to use, copy, modify, merge, publish, distribute, sublicense,
+  and/or sell copies of the Software, and to permit persons to whom the
+  Software is furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+  DEALINGS IN THE SOFTWARE.
+*/
+
+#draggablelist .draghandle {
+  cursor: move;
+}
+#draggablelist .card {
+  margin: 1em 0;
+}
+#draggablelist .closegraph .size {
+  font-size: 80%;
+}
+.card-leftheader {
+  width: 48px;
+  font-size: 18px;
+  line-height: 2em;
+  text-align: center;
+  padding: 10px 15px;
+  margin-bottom: 0;
+  background-color: rgba(0,0,0,.03);
+  border-right: 1px solid rgba(0,0,0,.125);
+  float: left;
+  height: 100%;
+  position: absolute;
+}
+.card-rightbody {
+  margin-left: 45px;
+  padding: 5px;
+  float: left;
+  height: 100%;
+  padding-right: 20px;
+}
+#graphselect {
+  max-height: 200px;
+  margin-bottom: 10px;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+}
+#graphselect a {
+  padding: .25rem 1.25rem;
+}
+.card-leftheader .dropdown-toggle::after {
+  display: none;
+}
+.graphinfo .dropdown-menu {
+  min-width: 30em;
+}
+.graphinfo .dropdown-item {
+  white-space: normal;
+  line-height: 1em;
+}
+.graphinfo .dropdown-item:hover, .graphinfo .dropdown-item:focus {
+  background-color: transparent;
+}
+.settings .dropdown-item {
+  padding: 0 1.5rem;
+}
+.settings .size {
+  display: inline-block;
+  vertical-align: middle;
+  width: 18px;
+  height: 18px;
+}
+.sizesm {
+  width: 100%;
+  height: 30%;
+  margin-top: 30%;
+  background: #212529;
+}
+.sizemd {
+  width: 100%;
+  height: 50%;
+  margin-top: 10%;
+  background: #212529;
+}
+.sizelg {
+  width: 100%;
+  height: 70%;
+  margin-top: 0;
+  background: #212529;
+}
+#template {
+  display: none;
+}
+.myplot {
+  padding: 0;
+}
+.mylegend {
+  padding: 0;
+  height: 150px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  font-size: 70%;
+}
+.mylegend thead th {
+  margin: 0;
+  padding: 0;
+  border: none;
+  text-align: center;
+}
+.mylegend td {
+  margin: 0;
+  padding: 0;
+  border: none;
+  cursor: pointer;
+}
+.mylegend td:nth-child(3), .mylegend td:nth-child(4), .mylegend td:nth-child(5) {
+  text-align: right;
+}
+.addgraph {
+  height: 200px;
+  display: none;
+}
+.loading {
+  width: 100%;
+  padding-bottom: 60%;
+  background: black;
+  background: white url(logo.png) no-repeat right bottom;
+  background-size: cover;
+  animation: loading 2s cubic-bezier(0.5, 0.5, 0.5, 1) infinite;
+  clip-path: polygon(0 100%, 0 97%, 8% 97%, 8% 100%, 10% 100%, 10% 97%, 18% 97%, 18% 100%, 20% 100%, 20% 97%, 28% 97%, 28% 100%, 30% 100%, 30% 97%, 38% 97%, 38% 100%, 40% 100%, 40% 97%, 48% 97%, 48% 100%, 50% 100%, 50% 97%, 58% 97%, 58% 100%, 60% 100%, 60% 97%, 68% 97%, 68% 100%, 70% 100%, 70% 97%, 78% 97%, 78% 100%, 80% 100%, 80% 97%, 88% 97%, 88% 100%, 90% 100%, 90% 97%, 98% 97%, 98% 100%);
+}
+.loading-small {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 166px;
+  height: 100px;
+  margin-top: -50px;
+  margin-left: -83px;
+  padding: 0;
+}
+@keyframes loading {
+  0 {
+    clip-path: polygon(0 100%, 0 97%, 8% 97%, 8% 100%, 10% 100%, 10% 97%, 18% 97%, 18% 100%, 20% 100%, 20% 97%, 28% 97%, 28% 100%, 30% 100%, 30% 97%, 38% 97%, 38% 100%, 40% 100%, 40% 97%, 48% 97%, 48% 100%, 50% 100%, 50% 97%, 58% 97%, 58% 100%, 60% 100%, 60% 97%, 68% 97%, 68% 100%, 70% 100%, 70% 97%, 78% 97%, 78% 100%, 80% 100%, 80% 97%, 88% 97%, 88% 100%, 90% 100%, 90% 97%, 98% 97%, 98% 100%);
+  }
+  20% {
+    clip-path: polygon(0 100%, 0 70%, 8% 70%, 8% 100%, 10% 100%, 10% 10%, 18% 10%, 18% 100%, 20% 100%, 20% 80%, 28% 80%, 28% 100%, 30% 100%, 30% 62%, 38% 62%, 38% 100%, 40% 100%, 40% 50%, 48% 50%, 48% 100%, 50% 100%, 50% 60%, 58% 60%, 58% 100%, 60% 100%, 60% 13%, 68% 13%, 68% 100%, 70% 100%, 70% 16%, 78% 16%, 78% 100%, 80% 100%, 80% 63%, 88% 63%, 88% 100%, 90% 100%, 90% 90%, 98% 90%, 98% 100%);
+  }
+  40% {
+    clip-path: polygon(0 100%, 0 70%, 8% 70%, 8% 100%, 10% 100%, 10% 83%, 18% 83%, 18% 100%, 20% 100%, 20% 60%, 28% 60%, 28% 100%, 30% 100%, 30% 32%, 38% 32%, 38% 100%, 40% 100%, 40% 15%, 48% 15%, 48% 100%, 50% 100%, 50% 80%, 58% 80%, 58% 100%, 60% 100%, 60% 85%, 68% 85%, 68% 100%, 70% 100%, 70% 27%, 78% 27%, 78% 100%, 80% 100%, 80% 38%, 88% 38%, 88% 100%, 90% 100%, 90% 90%, 98% 90%, 98% 100%);
+  }
+  60% {
+    clip-path: polygon(0 100%, 0 90%, 8% 90%, 8% 100%, 10% 100%, 10% 80%, 18% 80%, 18% 100%, 20% 100%, 20% 86%, 28% 86%, 28% 100%, 30% 100%, 30% 65%, 38% 65%, 38% 100%, 40% 100%, 40% 60%, 48% 60%, 48% 100%, 50% 100%, 50% 10%, 58% 10%, 58% 100%, 60% 100%, 60% 40%, 68% 40%, 68% 100%, 70% 100%, 70% 55%, 78% 55%, 78% 100%, 80% 100%, 80% 85%, 88% 85%, 88% 100%, 90% 100%, 90% 90%, 98% 90%, 98% 100%);
+  }
+  80% {
+    clip-path: polygon(0 100%, 0 70%, 8% 70%, 8% 100%, 10% 100%, 10% 51%, 18% 51%, 18% 100%, 20% 100%, 20% 55%, 28% 55%, 28% 100%, 30% 100%, 30% 12%, 38% 12%, 38% 100%, 40% 100%, 40% 30%, 48% 30%, 48% 100%, 50% 100%, 50% 20%, 58% 20%, 58% 100%, 60% 100%, 60% 10%, 68% 10%, 68% 100%, 70% 100%, 70% 13%, 78% 13%, 78% 100%, 80% 100%, 80% 14%, 88% 14%, 88% 100%, 90% 100%, 90% 90%, 98% 90%, 98% 100%);
+  }
+  100% {
+    clip-path: polygon(0 100%, 0 97%, 8% 97%, 8% 100%, 10% 100%, 10% 97%, 18% 97%, 18% 100%, 20% 100%, 20% 97%, 28% 97%, 28% 100%, 30% 100%, 30% 97%, 38% 97%, 38% 100%, 40% 100%, 40% 97%, 48% 97%, 48% 100%, 50% 100%, 50% 97%, 58% 97%, 58% 100%, 60% 100%, 60% 97%, 68% 97%, 68% 100%, 70% 100%, 70% 97%, 78% 97%, 78% 100%, 80% 100%, 80% 97%, 88% 97%, 88% 100%, 90% 100%, 90% 97%, 98% 97%, 98% 100%);
+  }
+}
