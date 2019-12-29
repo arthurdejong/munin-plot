@@ -6,7 +6,12 @@ const webpack = require('webpack')
 module.exports = {
   entry: [
     './src/munin-plot.js',
-    './src/munin-plot.scss'
+    './src/munin-plot.scss',
+    './src/apple-touch-icon.png',
+    './src/favicon-16x16.png',
+    './src/favicon-32x32.png',
+    './src/favicon-64x64.png',
+    './src/favicon.ico'
   ],
   output: {
     filename: 'munin-plot.[contenthash].js',
@@ -39,12 +44,24 @@ module.exports = {
         ]
       },
       {
-        test: /\.(woff(2)?|ttf|eot|svg|png)$/,
+        test: /\.(woff(2)?|ttf|eot|svg)$/,
         use: [
           {
             loader: 'file-loader',
             options: {
               name: '[name].[contenthash:20].[ext]',
+              esModule: false
+            }
+          }
+        ]
+      },
+      {
+        test: /\.(ico|png)$/,
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              name: '[name].[ext]',
               esModule: false
             }
           }

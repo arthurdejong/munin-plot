@@ -35,6 +35,10 @@ def static_serve(environ, start_response):
         content_type = 'text/javascript'
     elif path.endswith('.css'):
         content_type = 'text/css'
+    elif path.endswith('.png'):
+        content_type = 'image/png'
+    elif path.endswith('.ico'):
+        content_type = 'image/vnd.microsoft.icon'
     else:
         content_type = 'application/octet-stream'
     csp = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; " + \
