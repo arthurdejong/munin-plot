@@ -19,7 +19,7 @@ Basic configuration snippet for deploying the munin-plot under Apache with
 mod_wsgi:
 
    WSGIDaemonProcess munin-plot threads=5 maximum-requests=100 display-name=%{GROUP} home=/PATH/TO/munin-plot
-   AliasMatch ^/munin-plot/(graphs.*|data.*)$ /PATH/TO/munin-plot/web.py/$1
+   AliasMatch ^/munin-plot/(graphs.*|data.*)$ /PATH/TO/munin-plot/muninplot/wsgi.py/$1
    Alias /munin-plot /PATH/TO/munin-plot/static
    <Directory /PATH/TO/munin-plot>
      <Files web.py>

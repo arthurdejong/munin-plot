@@ -21,23 +21,22 @@
 import cgi
 import json
 import os
-import sys
 import time
 
-from munin import get_info, get_resolutions, get_values
-
-
-sys.stdout = sys.stderr
+from muninplot.data import get_info, get_resolutions, get_values
 
 
 def static_serve(environ, start_response):
     path = environ.get('PATH_INFO', '').lstrip('/') or 'index.html'
     path = os.path.normpath(os.sep + path).lstrip(os.sep)
-    content_type = 'text/html'
-    if path.endswith('.js'):
+    if path.endswith('.html'):
+        content_type = 'text/html'
+    elif path.endswith('.js'):
         content_type = 'text/javascript'
     elif path.endswith('.css'):
         content_type = 'text/css'
+    else:
+        content_type = 'application/octet-stream'
     csp = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; " + \
           "script-src 'self' 'unsafe-eval'; frame-ancestors 'none'"
     start_response('200 OK', [
@@ -119,9 +118,3 @@ def application(environ, start_response):
         return get_data(environ, start_response)
     else:
         return static_serve(environ, start_response)
-
-
-if __name__ == '__main__':
-    from wsgiref.simple_server import make_server
-    srv = make_server('0.0.0.0', 8080, application)
-    srv.serve_forever()

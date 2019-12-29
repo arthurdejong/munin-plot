@@ -1,5 +1,3 @@
-# Python module to get data from Munin data files
-
 # Copyright (C) 2018-2019 Arthur de Jong
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
