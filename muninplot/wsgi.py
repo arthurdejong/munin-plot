@@ -39,10 +39,16 @@ def static_serve(environ, start_response):
         content_type = 'application/octet-stream'
     csp = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; " + \
           "script-src 'self' 'unsafe-eval'; frame-ancestors 'none'"
+    path = os.path.join('static', path)
+    if not os.path.exists(path):
+        start_response('404 NOT FOUND', [
+            ('Content-Type', 'text/plain'),
+            ('Content-Security-Policy', csp)])
+        return [b'FILE NOT FOUND']
     start_response('200 OK', [
         ('Content-Type', content_type),
         ('Content-Security-Policy', csp)])
-    return [open(os.path.join('static', path), 'rb').read()]
+    return [open(path, 'rb').read()]
 
 
 def list_graphs(environ, start_response):
