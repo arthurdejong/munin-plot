@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "bootstrap": "^4.4.1",
+    "daterangepicker": "^3.0.5",
     "jquery": "^3.4.1",
     "jquery-ui": "^1.12.1",
     "open-iconic": "^1.1.1",

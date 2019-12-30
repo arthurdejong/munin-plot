@@ -9,6 +9,7 @@ globals:
   Atomics: readonly
   SharedArrayBuffer: readonly
   Plotly: true
+  moment: true
 parserOptions:
   ecmaVersion: 2018
   sourceType: module

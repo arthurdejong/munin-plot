@@ -25,6 +25,7 @@
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="author" content="Arthur de Jong">
   <title>Graphs</title>
   <link rel="apple-touch-icon" href="apple-touch-icon.png" sizes="180x180">
   <link rel="icon" href="favicon-32x32.png" sizes="32x32" type="image/png">
@@ -32,6 +33,17 @@
   <link rel="icon" href="favicon.ico">
 </head>
 <body>
+
+  <nav class="navbar navbar-expand-md navbar-light bg-light fixed-top">
+    <span class="navbar-brand mr-auto">
+      <img src="logo.png" width="50" height="30" class="d-inline-block align-top" alt="munin-plot">
+      munin-plot
+    </span>
+    <div id="reportrange" class="button dropdown-toggle">
+      <span></span>
+    </div>
+  </nav>
+
   <div class="container-fluid">
     <div class="row loadingrow"><div class="col-sm-2"></div><div class="col-sm-8"><div class="loading"></div><h3>LOADING</h3></div></div>
     <div class="row">
@@ -64,7 +76,7 @@
               </span>
             </div>
             <div class="card-rightbody row">
-              <div class="myplot col col-sm-8" style="width:100%;height:150px;">
+              <div class="myplot col col-sm-8">
                 <div class="loading loading-small"></div>
               </div>
               <div class="mylegend col col-sm-4">
@@ -87,7 +99,7 @@
 
     <div class="row addgraph">
       <div class="col col-sm-1">
-        <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#addgraph" aria-expanded="false" aria-controls="addgraph"><span class="oi oi-plus"></span></button>
+        <button class="btn btn-success" type="button" data-toggle="collapse" data-target="#addgraph" aria-expanded="false" aria-controls="addgraph"><span class="oi oi-plus"></span></button>
       </div>
       <div class="col col-sm-8">
         <div class="collapse" id="addgraph">
