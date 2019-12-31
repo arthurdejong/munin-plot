@@ -12,7 +12,8 @@ module.exports = (env, options) => {
       './src/favicon-16x16.png',
       './src/favicon-32x32.png',
       './src/favicon-64x64.png',
-      './src/favicon.ico'
+      './src/favicon.ico',
+      '@fortawesome/fontawesome-free/js/all'
     ],
     output: {
       filename: 'munin-plot.[contenthash].js',
