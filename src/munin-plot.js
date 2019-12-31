@@ -56,7 +56,7 @@ $(document).ready(function () {
     start = start.format('YYYY-MM-DD HH:mm')
     end = end.format('YYYY-MM-DD HH:mm')
     // update range for picker label
-    $('#reportrange span').html(start + ' - ' + end)
+    $('#reportrange span').text(start + ' - ' + end)
     // update graphs as needed
     $('.myplot').each(function () {
       if (this.layout) {
@@ -452,44 +452,48 @@ $(document).ready(function () {
     var clone = document.getElementById('template').firstElementChild.cloneNode(true)
     var plot = clone.getElementsByClassName('myplot')[0]
     var legend = clone.getElementsByClassName('mylegend')[0]
-    plot.graph = graph;
-    // update the graph info
-    [].forEach.call(clone.querySelectorAll('.graphinfo .dropdown-menu'), em => {
-      var info = '<tt class="dropdown-item">' + htmlescape(graph.group + '/' + graph.host) + '</tt>'
-      info += '<h3 class="dropdown-item">' + graph.graph_title + '</h3>'
-      if (graph.graph_info) {
-        info += '<div class="dropdown-item">' + htmlescape(graph.graph_info) + '</div>'
-      }
-      em.innerHTML = info
-    });
+    plot.graph = graph
+    // update graph title
+    $(clone).find('.graphtitle').text(graph.host + ' / ')
+      .append($('<b>').text(graph.graph_title))
+      .tooltip({title: graph.graph_info || ''})
+    // tooltip for drag handle
+    $(clone).find('.draghandle').tooltip({placement: 'right'})
     // set the size changing actions
-    [].forEach.call(clone.getElementsByClassName('setsize'), button => {
-      button.addEventListener('click', function () {
-        if (button.getElementsByClassName('sizesm').length) {
-          plot.style.height = '150px'
-          legend.style.height = '150px'
-        } else if (button.getElementsByClassName('sizemd').length) {
-          plot.style.height = '200px'
-          legend.style.height = '200px'
-        } else if (button.getElementsByClassName('sizelg').length) {
-          plot.style.height = '250px'
-          legend.style.height = '250px'
-        }
-        Plotly.relayout(plot, {})
-      })
+    $(clone).find('.sizesm').tooltip({placement: 'right'}).click(function () {
+      $(clone).find('.sizeactive').removeClass('sizeactive')
+      $(this).addClass('sizeactive')
+      plot.style.height = '150px'
+      legend.style.height = '150px'
+      Plotly.relayout(plot, {})
+    })
+    $(clone).find('.sizemd').tooltip({placement: 'right'}).click(function () {
+      $(clone).find('.sizeactive').removeClass('sizeactive')
+      $(this).addClass('sizeactive')
+      plot.style.height = '200px'
+      legend.style.height = '200px'
+      Plotly.relayout(plot, {})
+    })
+    $(clone).find('.sizelg').tooltip({placement: 'right'}).click(function () {
+      $(clone).find('.sizeactive').removeClass('sizeactive')
+      $(this).addClass('sizeactive')
+      plot.style.height = '250px'
+      legend.style.height = '250px'
+      Plotly.relayout(plot, {})
+    })
+    // configure the close button
+    $(clone).find('.closegraph').tooltip({placement: 'right'}).click(function () {
+      $(this).tooltip('dispose')
+      Plotly.purge(plot)
+      clone.parentNode.removeChild(clone)
     })
     // set the wanted size
     plot.style.height = size
-    legend.style.height = size;
-    // set the close action
-    [].forEach.call(clone.getElementsByClassName('closegraph'), button => {
-      button.addEventListener('click', function () {
-        Plotly.purge(plot)
-        clone.parentNode.removeChild(clone)
-      })
-    })
+    legend.style.height = size
     // load the graph data
     loadGraph(plot, legend, graph)
+    // enable tooltips on legend
+    $(clone).find('.mylegend *[title]').tooltip({placement: 'bottom', container: 'body'})
     // show the graph
     document.getElementById('draggablelist').appendChild(clone)
   }
