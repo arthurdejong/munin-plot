@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <!--
-  Copyright (C) 2018 Arthur de Jong
+  Copyright (C) 2018-2020 Arthur de Jong
 
   Permission is hereby granted, free of charge, to any person obtaining a
   copy of this software and associated documentation files (the "Software"),
@@ -35,12 +35,13 @@
 <body>
 
   <nav class="navbar navbar-expand-md navbar-light bg-light fixed-top">
-    <span class="navbar-brand mr-auto">
+    <span class="navbar-brand">
       <img src="logo.png" width="50" height="30" class="d-inline-block align-top" alt="munin-plot">
       munin-plot
     </span>
-    <div id="reportrange" class="button dropdown-toggle">
+    <div id="reportrange" class="dropdown-toggle btn btn-outline-secondary ml-auto">
       <span></span>
+      <i class="fa fa-calendar"></i>
     </div>
   </nav>
 
@@ -52,10 +53,11 @@
         <ul id="draggablelist" class="list-unstyled">
         </ul>
 
+        <!-- template use for generating new graphs -->
         <ul id="template">
           <li class="card">
-            <div class="card-leftheader">
-              <span class="draghandle" title="drag to re-order"><i class="fa fa-grip-vertical"></i></span>
+            <div class="card-leftheader text-secondary">
+              <span class="draghandle" title="drag to re-order"><i class="fa fa-arrows-alt"></i></span>
               <span class="sizesm sizeactive" title="small graph"></span>
               <span class="sizemd" title="medium graph"></span>
               <span class="sizelg" title="large graph"></span>
@@ -101,7 +103,7 @@
                   <div class="input-group-prepend">
                     <label for="graphfilter" class="input-group-text"><i class="fa fa-search"></i></label>
                   </div>
-                  <input id="graphfilter"></input>
+                  <input id="graphfilter" class="form-control"></input>
                   <select id="hostselect" class="form-control">
                     <option value="">All hosts</option>
                   </select>

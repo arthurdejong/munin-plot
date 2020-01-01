@@ -2,7 +2,7 @@
 @import "~daterangepicker/daterangepicker.css";
 
 /*!
-  Copyright (C) 2018-2019 Arthur de Jong
+  Copyright (C) 2018-2020 Arthur de Jong
 
   Permission is hereby granted, free of charge, to any person obtaining a
   copy of this software and associated documentation files (the "Software"),
@@ -75,24 +75,24 @@ body {
   width: 16px;
   height: 6px;
   margin: 6px 1px;
-  background: #6c757d;
+  background: #c6c6c6;
 }
 .sizemd {
   display: inline-block;
   width: 16px;
   height: 10px;
   margin: 4px 1px;
-  background: #6c757d;
+  background: #c6c6c6;
 }
 .sizelg {
   display: inline-block;
   width: 16px;
   height: 14px;
   margin: 2px 1px;
-  background: #6c757d;
+  background: #c6c6c6;
 }
 .sizeactive {
-  background: #212529;
+  background: #6c757d;
 }
 
 #template {

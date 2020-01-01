@@ -1,5 +1,5 @@
 /*!
-  Copyright (C) 2018-2019 Arthur de Jong
+  Copyright (C) 2018-2020 Arthur de Jong
 
   Permission is hereby granted, free of charge, to any person obtaining a
   copy of this software and associated documentation files (the "Software"),
@@ -28,7 +28,15 @@ require('daterangepicker')
 $(document).ready(function () {
   // make list of graphs draggable
   $('#draggablelist').sortable({
-    handle: '.draghandle'
+    handle: '.draghandle',
+    start: function () {
+      // hide and disable all tooltips
+      $('.tooltip').tooltip('hide').tooltip('disable')
+    },
+    stop: function () {
+      // enable tooltips again
+      $('.tooltip').tooltip('enable')
+    }
   })
 
   moment.fn.round10Minutes = function (how) {
@@ -50,8 +58,8 @@ $(document).ready(function () {
     end.round10Minutes('ceil')
     // update the date range picker
     var daterangepicker = $('#reportrange').data('daterangepicker')
-    daterangepicker.startDate = start
-    daterangepicker.endDate = end
+    daterangepicker.setStartDate(start)
+    daterangepicker.setEndDate(end)
     // ensure start and end are strings
     start = start.format('YYYY-MM-DD HH:mm')
     end = end.format('YYYY-MM-DD HH:mm')
@@ -152,7 +160,6 @@ $(document).ready(function () {
       'hoverCompareCartesian'
     ],
     showTips: false
-  // toImageButtonOptions
   }
 
   // whether new data should be loaded
@@ -207,7 +214,7 @@ $(document).ready(function () {
 
   // load graph data into the plot
   function loadGraph(plot, legend, graph) {
-  // prepare the graph configuration
+    // prepare the graph configuration
     var layout = JSON.parse(JSON.stringify(baseLayout))
     if (graph.graph_vlabel) {
       layout.yaxis.title = graph.graph_vlabel
@@ -500,7 +507,7 @@ $(document).ready(function () {
 
   // update the select widget to be able to list the known graphs
   function updateSelect(graphs) {
-  // make lists of groups, hosts and categories
+    // make lists of groups, hosts and categories
     var hosts = {}
     var categories = []
     for (var graph in graphs) {
@@ -593,17 +600,15 @@ $(document).ready(function () {
     updateGraphList()
   }
 
-  // load all graphs
-  var request = new XMLHttpRequest()
-  request.overrideMimeType('application/json')
-  request.open('GET', 'graphs', true)
-  request.onreadystatechange = function () {
-    if (request.readyState === 4 && request.status === 200) {
-      var graphs = JSON.parse(request.responseText)
-      updateSelect(graphs)
+  // function to load information on available graphs
+  function loadGraphInformation() {
+    $.getJSON('graphs', function (data) {
+      updateSelect(data)
+      // hide loading indicator
       document.getElementsByClassName('addgraph')[0].style.display = 'flex'
       document.getElementsByClassName('loadingrow')[0].style.display = 'none'
-    }
+    })
   }
-  request.send(null)
+
+  loadGraphInformation()
 })
