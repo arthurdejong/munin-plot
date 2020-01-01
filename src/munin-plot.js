@@ -36,6 +36,10 @@ $(document).ready(function () {
     stop: function () {
       // enable tooltips again
       $('.tooltip').tooltip('enable')
+    },
+    update: function (event, ui) {
+      // after any changes, save the current list of graphs
+      localStorage.setItem('shownGraphs', JSON.stringify(getCurrentGraphs()))
     }
   })
 
@@ -74,6 +78,8 @@ $(document).ready(function () {
         }
       }
     })
+    // save date range in local storage
+    localStorage.setItem('dateRange', JSON.stringify({start: start, end: end}))
   }
 
   // initialise the date range picker
@@ -99,8 +105,14 @@ $(document).ready(function () {
     }
   }, setDateRange)
 
-  // set a default date range
-  setDateRange(moment().subtract(2, 'days'), moment().add(1, 'hour').round10Minutes('ceil'))
+  try {
+    // restore the previously saved date range
+    var data = JSON.parse(localStorage.getItem('dateRange'))
+    setDateRange(data.start, data.end)
+  } catch (error) {
+    // set a default date range
+    setDateRange(moment().subtract(2, 'days'), moment().add(1, 'hour').round10Minutes('ceil'))
+  }
 
   var defaultColors = [
     '#00cc00', '#0066b3', '#ff8000', '#dbc300', '#330099', '#990099',
@@ -365,6 +377,8 @@ $(document).ready(function () {
         // update the legend values
         updateLegend(plot, tracebyfield, legendbyfield)
       })
+      // after any changes, save the current list of graphs
+      localStorage.setItem('shownGraphs', JSON.stringify(getCurrentGraphs()))
     })
   }
 
@@ -493,6 +507,8 @@ $(document).ready(function () {
       $(this).tooltip('dispose')
       Plotly.purge(plot)
       clone.parentNode.removeChild(clone)
+      // after any changes, save the current list of graphs
+      localStorage.setItem('shownGraphs', JSON.stringify(getCurrentGraphs()))
     })
     // set the wanted size
     plot.style.height = size
@@ -600,6 +616,15 @@ $(document).ready(function () {
     updateGraphList()
   }
 
+  // return a list of currently shown graphs
+  function getCurrentGraphs() {
+    return $('.myplot').map(function () {
+      if (this && this.layout) {
+        return {name: this.graph.name}
+      }
+    }).toArray()
+  }
+
   // function to load information on available graphs
   function loadGraphInformation() {
     $.getJSON('graphs', function (data) {
@@ -607,6 +632,13 @@ $(document).ready(function () {
       // hide loading indicator
       document.getElementsByClassName('addgraph')[0].style.display = 'flex'
       document.getElementsByClassName('loadingrow')[0].style.display = 'none'
+      // restore previous list of graphs
+      try {
+        JSON.parse(localStorage.getItem('shownGraphs')).forEach(function (graph) {
+          // lookup the graph by name
+          addGraph(data[graph.name])
+        })
+      } catch (error) {}
     })
   }
 
