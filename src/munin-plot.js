@@ -505,10 +505,12 @@ $(document).ready(function () {
     // configure the close button
     $(clone).find('.closegraph').tooltip({placement: 'right'}).click(function () {
       $(this).tooltip('dispose')
-      Plotly.purge(plot)
-      clone.parentNode.removeChild(clone)
-      // after any changes, save the current list of graphs
-      localStorage.setItem('shownGraphs', JSON.stringify(getCurrentGraphs()))
+      $(clone).hide(400, function () {
+        Plotly.purge(plot)
+        $(this).remove()
+        // after any changes, save the current list of graphs
+        localStorage.setItem('shownGraphs', JSON.stringify(getCurrentGraphs()))
+      })
     })
     // set the wanted size
     plot.style.height = size
