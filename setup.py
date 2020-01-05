@@ -28,6 +28,7 @@ import sys
 from distutils.spawn import find_executable
 
 from setuptools import setup
+from setuptools.command.build_py import build_py
 from setuptools.command.sdist import sdist
 
 
@@ -37,24 +38,38 @@ if 'sdist' in sys.argv:
     os.umask(int('022', 8))
 
 
+def build_npm():
+    """Build the static files by using NPM."""
+    # build static files if NPM can be found
+    if find_executable('npm'):
+        subprocess.run(['npm', 'install'], check=True)
+        subprocess.run(['npm', 'run', 'build'], check=True)
+    # fail if generated files are absent
+    with open('muninplot/static/index.html', 'rb') as f:
+        f.read()
+
+
+class NPMbuild_py(build_py):  # noqa: N801
+    """Custom build class to build static files with NPM."""
+
+    def run(self):
+        """Perform the sdist actions."""
+        build_npm()
+        build_py.run(self)
+
+
 class NPMsdist(sdist):
     """Custom sdist class to build static files with NPM."""
 
     def run(self):
         """Perform the sdist actions."""
-        # build static files if NPM can be found
-        if find_executable('npm'):
-            subprocess.run(['npm', 'install'], check=True)
-            subprocess.run(['npm', 'run', 'build'], check=True)
-        # fail if generated files are absent
-        with open('muninplot/static/index.html', 'rb') as f:
-            f.read()
-        # run the other sdist steps as usual
+        build_npm()
         sdist.run(self)
 
 
 setup(
     cmdclass={
+        'build_py': NPMbuild_py,
         'sdist': NPMsdist,
     },
 )
