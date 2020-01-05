@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2019 Arthur de Jong
+# Copyright (C) 2018-2020 Arthur de Jong
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -30,7 +30,7 @@ def static_serve(environ, start_response):
     path = environ.get('PATH_INFO', '').lstrip('/') or 'index.html'
     path = os.path.normpath(os.sep + path).lstrip(os.sep)
     if path.endswith('.html'):
-        content_type = 'text/html'
+        content_type = 'text/html; charset=utf-8'
     elif path.endswith('.js'):
         content_type = 'text/javascript'
     elif path.endswith('.css'):
