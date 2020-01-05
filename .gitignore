@@ -13,4 +13,4 @@ __pycache__
 /*.egg
 /*.egg-info
 /node_modules
-/static
+/muninplot/static

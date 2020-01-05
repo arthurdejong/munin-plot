@@ -23,12 +23,15 @@ import json
 import os
 import time
 
+import pkg_resources
+
 from muninplot.data import get_info, get_resolutions, get_values
 
 
 def static_serve(environ, start_response):
     path = environ.get('PATH_INFO', '').lstrip('/') or 'index.html'
     path = os.path.normpath(os.sep + path).lstrip(os.sep)
+    path = os.path.join('static', path)
     if path.endswith('.html'):
         content_type = 'text/html; charset=utf-8'
     elif path.endswith('.js'):
@@ -43,8 +46,7 @@ def static_serve(environ, start_response):
         content_type = 'application/octet-stream'
     csp = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; " + \
           "script-src 'self' 'unsafe-eval'; frame-ancestors 'none'"
-    path = os.path.join('static', path)
-    if not os.path.exists(path):
+    if not pkg_resources.resource_exists('muninplot', path):
         start_response('404 NOT FOUND', [
             ('Content-Type', 'text/plain'),
             ('Content-Security-Policy', csp)])
@@ -52,7 +54,7 @@ def static_serve(environ, start_response):
     start_response('200 OK', [
         ('Content-Type', content_type),
         ('Content-Security-Policy', csp)])
-    return [open(path, 'rb').read()]
+    return [pkg_resources.resource_stream('muninplot', path).read()]
 
 
 def list_graphs(environ, start_response):

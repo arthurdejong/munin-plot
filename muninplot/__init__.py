@@ -1,6 +1,4 @@
-#!/usr/bin/env python3
-
-# Copyright (C) 2019-2020 Arthur de Jong
+# Copyright (C) 2020 Arthur de Jong
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -20,41 +18,4 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-"""munin-plot installation script."""
-
-import os
-import subprocess
-import sys
-from distutils.spawn import find_executable
-
-from setuptools import setup
-from setuptools.command.sdist import sdist
-
-
-# fix permissions for sdist
-if 'sdist' in sys.argv:
-    os.system('chmod -R a+rX .')
-    os.umask(int('022', 8))
-
-
-class NPMsdist(sdist):
-    """Custom sdist class to build static files with NPM."""
-
-    def run(self):
-        """Perform the sdist actions."""
-        # build static files if NPM can be found
-        if find_executable('npm'):
-            subprocess.run(['npm', 'install'], check=True)
-            subprocess.run(['npm', 'run', 'build'], check=True)
-        # fail if generated files are absent
-        with open('muninplot/static/index.html', 'rb') as f:
-            f.read()
-        # run the other sdist steps as usual
-        sdist.run(self)
-
-
-setup(
-    cmdclass={
-        'sdist': NPMsdist,
-    },
-)
+"""Alternative web front-end for Munin."""
