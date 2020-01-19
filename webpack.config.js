@@ -5,16 +5,7 @@ const webpack = require('webpack')
 
 module.exports = (env, options) => {
   return {
-    entry: [
-      './src/munin-plot.js',
-      './src/munin-plot.scss',
-      './src/apple-touch-icon.png',
-      './src/favicon-16x16.png',
-      './src/favicon-32x32.png',
-      './src/favicon-64x64.png',
-      './src/favicon.ico',
-      '@fortawesome/fontawesome-free/js/all'
-    ],
+    entry: './src/munin-plot.js',
     output: {
       filename: 'munin-plot.[contenthash].js',
       path: path.resolve(__dirname, 'muninplot/static')

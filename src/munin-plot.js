@@ -20,10 +20,19 @@
   DEALINGS IN THE SOFTWARE.
 */
 
+require('./apple-touch-icon.png')
+require('./favicon-16x16.png')
+require('./favicon-32x32.png')
+require('./favicon-64x64.png')
+require('./favicon.ico')
 require('bootstrap')
+require('bootstrap/scss/bootstrap.scss')
 require('jquery-ui/ui/widgets/draggable')
 require('jquery-ui/ui/widgets/sortable')
 require('daterangepicker')
+require('daterangepicker/daterangepicker.css')
+require('@fortawesome/fontawesome-free/js/all')
+require('./munin-plot.css')
 
 $(document).ready(function () {
   // make list of graphs draggable
