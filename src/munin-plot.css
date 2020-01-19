@@ -98,8 +98,17 @@ body {
 .myplot {
   padding: 0;
   width: 100%;
+}
+.plot-sm {
   height: 150px;
 }
+.plot-md {
+  height: 200px;
+}
+.plot-lg {
+  height: 250px;
+}
+
 .mylegend {
   padding: 0;
   height: 150px;
@@ -123,6 +132,16 @@ body {
 .mylegend td:nth-child(3), .mylegend td:nth-child(4), .mylegend td:nth-child(5) {
   text-align: right;
 }
+.legend-sm {
+  height: 150px;
+}
+.legend-md {
+  height: 200px;
+}
+.legend-lg {
+  height: 250px;
+}
+
 .addgraph {
   height: 200px;
   display: none;

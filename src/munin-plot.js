@@ -478,7 +478,7 @@ $(document).ready(function () {
   }
   setTimeout(checkNewData, 60000)
 
-  function addGraph(graph, size = '150px') {
+  function addGraph(graph, size = 'sm') {
     var clone = document.getElementById('template').firstElementChild.cloneNode(true)
     var plot = clone.getElementsByClassName('myplot')[0]
     var legend = clone.getElementsByClassName('mylegend')[0]
@@ -493,23 +493,26 @@ $(document).ready(function () {
     $(clone).find('.sizesm').tooltip({placement: 'right'}).click(function () {
       $(clone).find('.sizeactive').removeClass('sizeactive')
       $(this).addClass('sizeactive')
-      plot.style.height = '150px'
-      legend.style.height = '150px'
+      $(plot).addClass('plot-sm').removeClass('plot-md plot-lg')
+      $(legend).addClass('legend-sm').removeClass('legend-md legend-lg')
       Plotly.relayout(plot, {})
+      localStorage.setItem('shownGraphs', JSON.stringify(getCurrentGraphs()))
     })
     $(clone).find('.sizemd').tooltip({placement: 'right'}).click(function () {
       $(clone).find('.sizeactive').removeClass('sizeactive')
       $(this).addClass('sizeactive')
-      plot.style.height = '200px'
-      legend.style.height = '200px'
+      $(plot).addClass('plot-md').removeClass('plot-sm plot-lg')
+      $(legend).addClass('legend-md').removeClass('legend-sm legend-lg')
       Plotly.relayout(plot, {})
+      localStorage.setItem('shownGraphs', JSON.stringify(getCurrentGraphs()))
     })
     $(clone).find('.sizelg').tooltip({placement: 'right'}).click(function () {
       $(clone).find('.sizeactive').removeClass('sizeactive')
       $(this).addClass('sizeactive')
-      plot.style.height = '250px'
-      legend.style.height = '250px'
+      $(plot).addClass('plot-lg').removeClass('plot-sm plot-md')
+      $(legend).addClass('legend-lg').removeClass('legend-sm legend-md')
       Plotly.relayout(plot, {})
+      localStorage.setItem('shownGraphs', JSON.stringify(getCurrentGraphs()))
     })
     // configure the close button
     $(clone).find('.closegraph').tooltip({placement: 'right'}).click(function () {
@@ -522,8 +525,10 @@ $(document).ready(function () {
       })
     })
     // set the wanted size
-    plot.style.height = size
-    legend.style.height = size
+    $(plot).addClass('plot-' + size)
+    $(legend).addClass('legend-' + size)
+    $(clone).find('.sizeactive').removeClass('sizeactive')
+    $(clone).find('.size' + size).addClass('sizeactive')
     // load the graph data
     loadGraph(plot, legend, graph)
     // enable tooltips on legend
@@ -631,7 +636,15 @@ $(document).ready(function () {
   function getCurrentGraphs() {
     return $('.myplot').map(function () {
       if (this && this.layout) {
-        return {name: this.graph.name}
+        var size
+        if ($(this).hasClass('plot-sm')) {
+          size = 'sm'
+        } else if ($(this).hasClass('plot-md')) {
+          size = 'md'
+        } else if ($(this).hasClass('plot-lg')) {
+          size = 'lg'
+        }
+        return {name: this.graph.name, size: size}
       }
     }).toArray()
   }
@@ -647,7 +660,7 @@ $(document).ready(function () {
       try {
         JSON.parse(localStorage.getItem('shownGraphs')).forEach(function (graph) {
           // lookup the graph by name
-          addGraph(data[graph.name])
+          addGraph(data[graph.name], graph.size || 'sm')
         })
       } catch (error) {}
     })
