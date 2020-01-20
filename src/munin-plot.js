@@ -48,7 +48,7 @@ $(document).ready(function () {
     },
     update: function (event, ui) {
       // after any changes, save the current list of graphs
-      localStorage.setItem('shownGraphs', JSON.stringify(getCurrentGraphs()))
+      saveCurrentGraphs()
     }
   })
 
@@ -193,18 +193,18 @@ $(document).ready(function () {
   }
 
   // update the legend
-  function updateLegend(plot, tracebyfield, legendbyfield) {
+  function updateLegend(plot) {
     var [minx, maxx] = plot.layout.xaxis.range
-    Object.keys(legendbyfield).forEach(function (field) {
-      var columns = legendbyfield[field].getElementsByTagName('td')
+    Object.keys(plot.legendbyfield).forEach(function (field) {
+      var columns = plot.legendbyfield[field].getElementsByTagName('td')
       // calculate minimum
-      var mintrace = tracebyfield[field + '.min']
+      var mintrace = plot.tracebyfield[field + '.min']
       var minvalue = Math.min.apply(null, mintrace.y.filter(function (el, idx) {
         var x = mintrace.x[idx]
         return x >= minx && x <= maxx
       }))
       // calculate average
-      var avgtrace = tracebyfield[field]
+      var avgtrace = plot.tracebyfield[field]
       if (avgtrace.y.length) {
         var avgvalue = avgtrace.y.map(function (current, idx) {
           var x = avgtrace.x[idx]
@@ -221,7 +221,7 @@ $(document).ready(function () {
         avgvalue = undefined
       }
       // calculate maximum
-      var maxtrace = tracebyfield[field + '.max']
+      var maxtrace = plot.tracebyfield[field + '.max']
       var maxvalue = Math.max.apply(null, maxtrace.y.filter(function (el, idx) {
         var x = maxtrace.x[idx]
         return x >= minx && x <= maxx
@@ -308,7 +308,7 @@ $(document).ready(function () {
       tracebyfield[field].y = []
     })
     // build the legend
-    var legendbyfield = {}
+    plot.legendbyfield = {}
     traces.slice().reverse().forEach(function (trace) {
       if (trace.showlegend !== false) {
         var legendrow = document.createElement('tr')
@@ -322,7 +322,7 @@ $(document).ready(function () {
         legendrow.innerHTML += '<td><span title="' + htmlescape(trace.info) + '">' + htmlescape(trace.name) + '</span></td>'
         legendrow.innerHTML += '<td></td><td></td><td></td>'
         legend.getElementsByTagName('tbody')[0].appendChild(legendrow)
-        legendbyfield[trace.field_name] = legendrow
+        plot.legendbyfield[trace.field_name] = legendrow
         // handle showing/hiding the trace
         legendrow.addEventListener('click', function () {
           var visible = (trace.visible === false)
@@ -332,6 +332,7 @@ $(document).ready(function () {
               t.visible = visible
             }
           })
+          saveCurrentGraphs()
           Plotly.redraw(plot)
         })
         // highlight the trace by lowering the opacity of the others
@@ -375,7 +376,7 @@ $(document).ready(function () {
       }
       plot.innerHTML = ''
       Plotly.react(plot, traces, layout, config)
-      updateLegend(plot, tracebyfield, legendbyfield)
+      updateLegend(plot)
       updatedata = true
       // handle plot changes
       plot.on('plotly_relayout', function (ed) {
@@ -384,10 +385,10 @@ $(document).ready(function () {
           setDateRange(ed['xaxis.range[0]'], ed['xaxis.range[1]'])
         }
         // update the legend values
-        updateLegend(plot, tracebyfield, legendbyfield)
+        updateLegend(plot)
       })
       // after any changes, save the current list of graphs
-      localStorage.setItem('shownGraphs', JSON.stringify(getCurrentGraphs()))
+      saveCurrentGraphs()
     })
   }
 
@@ -422,8 +423,7 @@ $(document).ready(function () {
                   for (var i = data.length - 1; i >= 0; i--) {
                     var row = data[i]
                     var time = row.time
-                    Object.keys(plot.tracebyfield).forEach(function (field) {
-                      var trace = plot.tracebyfield[field]
+                    Object.entries(plot.tracebyfield).forEach(function ([field, trace]) {
                       if (time < trace.x[0]) {
                         trace.x.splice(0, 0, time)
                         trace.y.splice(0, 0, Number(row[field]))
@@ -446,8 +446,7 @@ $(document).ready(function () {
                   for (var i = 0; i < data.length; i++) {
                     var row = data[i]
                     var time = row.time
-                    Object.keys(plot.tracebyfield).forEach(function (field) {
-                      var trace = plot.tracebyfield[field]
+                    Object.entries(plot.tracebyfield).forEach(function ([field, trace]) {
                       if (time > trace.x[trace.x.length - 1]) {
                         trace.x.push(time)
                         trace.y.push(Number(row[field]))
@@ -496,7 +495,7 @@ $(document).ready(function () {
       $(plot).addClass('plot-sm').removeClass('plot-md plot-lg')
       $(legend).addClass('legend-sm').removeClass('legend-md legend-lg')
       Plotly.relayout(plot, {})
-      localStorage.setItem('shownGraphs', JSON.stringify(getCurrentGraphs()))
+      saveCurrentGraphs()
     })
     $(clone).find('.sizemd').tooltip({placement: 'right'}).click(function () {
       $(clone).find('.sizeactive').removeClass('sizeactive')
@@ -504,7 +503,7 @@ $(document).ready(function () {
       $(plot).addClass('plot-md').removeClass('plot-sm plot-lg')
       $(legend).addClass('legend-md').removeClass('legend-sm legend-lg')
       Plotly.relayout(plot, {})
-      localStorage.setItem('shownGraphs', JSON.stringify(getCurrentGraphs()))
+      saveCurrentGraphs()
     })
     $(clone).find('.sizelg').tooltip({placement: 'right'}).click(function () {
       $(clone).find('.sizeactive').removeClass('sizeactive')
@@ -512,7 +511,7 @@ $(document).ready(function () {
       $(plot).addClass('plot-lg').removeClass('plot-sm plot-md')
       $(legend).addClass('legend-lg').removeClass('legend-sm legend-md')
       Plotly.relayout(plot, {})
-      localStorage.setItem('shownGraphs', JSON.stringify(getCurrentGraphs()))
+      saveCurrentGraphs()
     })
     // configure the close button
     $(clone).find('.closegraph').tooltip({placement: 'right'}).click(function () {
@@ -521,7 +520,7 @@ $(document).ready(function () {
         Plotly.purge(plot)
         $(this).remove()
         // after any changes, save the current list of graphs
-        localStorage.setItem('shownGraphs', JSON.stringify(getCurrentGraphs()))
+        saveCurrentGraphs()
       })
     })
     // set the wanted size
@@ -535,6 +534,7 @@ $(document).ready(function () {
     $(clone).find('.mylegend *[title]').tooltip({placement: 'bottom', container: 'body'})
     // show the graph
     document.getElementById('draggablelist').appendChild(clone)
+    return plot
   }
 
   // update the select widget to be able to list the known graphs
@@ -636,17 +636,30 @@ $(document).ready(function () {
   function getCurrentGraphs() {
     return $('.myplot').map(function () {
       if (this && this.layout) {
-        var size
-        if ($(this).hasClass('plot-sm')) {
-          size = 'sm'
-        } else if ($(this).hasClass('plot-md')) {
-          size = 'md'
-        } else if ($(this).hasClass('plot-lg')) {
-          size = 'lg'
+        return {
+          name: this.graph.name,
+          size: (function (graph) {
+            if ($(graph).hasClass('plot-sm')) {
+              return 'sm'
+            } else if ($(graph).hasClass('plot-md')) {
+              return 'md'
+            } else if ($(graph).hasClass('plot-lg')) {
+              return 'lg'
+            }
+          })(this),
+          hidden: Object.entries(this.tracebyfield).filter(function ([field, trace]) {
+            return trace.visible === false && trace.showlegend !== false
+          }).map(function ([field, trace]) {
+            return field
+          })
         }
-        return {name: this.graph.name, size: size}
       }
     }).toArray()
+  }
+
+  // save the current graph status to local storage
+  function saveCurrentGraphs() {
+    localStorage.setItem('shownGraphs', JSON.stringify(getCurrentGraphs()))
   }
 
   // function to load information on available graphs
@@ -660,7 +673,20 @@ $(document).ready(function () {
       try {
         JSON.parse(localStorage.getItem('shownGraphs')).forEach(function (graph) {
           // lookup the graph by name
-          addGraph(data[graph.name], graph.size || 'sm')
+          var plot = addGraph(data[graph.name], graph.size || 'sm')
+          // hide fields
+          if (graph.hidden && graph.hidden.length) {
+            graph.hidden.forEach(function (field) {
+              plot.tracebyfield[field].visible = false
+              if (plot.tracebyfield[field + '.min']) {
+                plot.tracebyfield[field + '.min'].visible = false
+                plot.tracebyfield[field + '.min'].showlegend = false
+                plot.tracebyfield[field + '.max'].visible = false
+                plot.tracebyfield[field + '.max'].showlegend = false
+              }
+              plot.legendbyfield[field].style.opacity = 0.2
+            })
+          }
         })
       } catch (error) {}
     })
