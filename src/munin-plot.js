@@ -186,17 +186,10 @@ $(document).ready(function () {
   // whether new data should be loaded
   var updatedata = false
 
-  function htmlescape(text) {
-    var p = document.createElement('p')
-    p.appendChild(document.createTextNode(text))
-    return p.innerHTML.replace(/'/g, '&quot;')
-  }
-
   // update the legend
   function updateLegend(plot) {
     var [minx, maxx] = plot.layout.xaxis.range
     Object.keys(plot.legendbyfield).forEach(function (field) {
-      var columns = plot.legendbyfield[field].getElementsByTagName('td')
       // calculate minimum
       var mintrace = plot.tracebyfield[field + '.min']
       var minvalue = Math.min.apply(null, mintrace.y.filter(function (el, idx) {
@@ -227,6 +220,7 @@ $(document).ready(function () {
         return x >= minx && x <= maxx
       }))
       // update legend
+      var columns = $(plot.legendbyfield[field]).find('td')
       columns[2].textContent = (isNaN(minvalue) || !isFinite(minvalue)) ? '-' : Plotly.d3.format('.4s')(minvalue)
       columns[3].textContent = (isNaN(avgvalue) || !isFinite(avgvalue)) ? '-' : Plotly.d3.format('.4s')(avgvalue)
       columns[4].textContent = (isNaN(maxvalue) || !isFinite(maxvalue)) ? '-' : Plotly.d3.format('.4s')(maxvalue)
@@ -311,32 +305,36 @@ $(document).ready(function () {
     plot.legendbyfield = {}
     traces.slice().reverse().forEach(function (trace) {
       if (trace.showlegend !== false) {
-        var legendrow = document.createElement('tr')
-        var style
+        var legendrow = $('<tr></tr>')
+        legendrow.append($('<td style="width: 30px;"><svg height="10" width="20"><line x1="0" y1="5" x2="20" y2="5"></svg></td>'))
+        legendrow.append($('<td><span></span></td>'))
+        legendrow.append($('<td></td>'))
+        legendrow.append($('<td></td>'))
+        legendrow.append($('<td></td>'))
         if (trace.fillcolor) {
-          style = 'stroke: ' + trace.fillcolor + ';stroke-width:8'
+          legendrow.find('svg').attr('style', 'stroke: ' + trace.fillcolor + ';stroke-width:8')
         } else {
-          style = 'stroke: ' + trace.line.color + ';stroke-width:2'
+          legendrow.find('svg').attr('style', 'stroke: ' + trace.line.color + ';stroke-width:2')
         }
-        legendrow.innerHTML += '<td style="width: 30px;"><svg height="10" width="20"><line x1="0" y1="5" x2="20" y2="5" style="' + style + '" /></svg></td>'
-        legendrow.innerHTML += '<td><span title="' + htmlescape(trace.info) + '">' + htmlescape(trace.name) + '</span></td>'
-        legendrow.innerHTML += '<td></td><td></td><td></td>'
-        legend.getElementsByTagName('tbody')[0].appendChild(legendrow)
-        plot.legendbyfield[trace.field_name] = legendrow
+        legendrow.find('span').attr('title', trace.info).text(trace.name)
+        legend.find('tbody').append(legendrow)
+        plot.legendbyfield[trace.field_name] = legendrow[0]
         // handle showing/hiding the trace
-        legendrow.addEventListener('click', function () {
-          var visible = (trace.visible === false)
-          legendrow.style.opacity = visible ? 1 : 0.2
-          plot.data.forEach(function (t) {
-            if (t.field_name === trace.field_name) {
-              t.visible = visible
-            }
-          })
-          saveCurrentGraphs()
-          Plotly.redraw(plot)
+        legendrow.click(function () {
+          if (plot.data) {
+            var visible = (trace.visible === false)
+            $(this).css('opacity', visible ? 1 : 0.2)
+            plot.data.forEach(function (t) {
+              if (t.field_name === trace.field_name) {
+                t.visible = visible
+              }
+            })
+            saveCurrentGraphs()
+            Plotly.redraw(plot)
+          }
         })
         // highlight the trace by lowering the opacity of the others
-        legendrow.addEventListener('mouseover', function () {
+        legendrow.mouseover(function () {
           if (plot.data) {
             var vals = plot.data.map(t => t.field_name === trace.field_name ? 1 : 0.1)
             Plotly.restyle(plot, 'opacity', vals)
@@ -352,7 +350,7 @@ $(document).ready(function () {
       }
     })
     // reset opacity after exiting the legend
-    legend.addEventListener('mouseout', function () {
+    legend.mouseout(function () {
       if (plot.data) {
         Plotly.restyle(plot, 'opacity', plot.data.map(t => 1))
         var vals = plot.data.map(function (t) {
@@ -396,11 +394,12 @@ $(document).ready(function () {
   function checkDataUpdates() {
     try {
       if (updatedata) {
-        updatedata = false;
+        updatedata = false
         // go over all plots
-        [].forEach.call(document.getElementsByClassName('myplot'), plot => {
-          if (plot && plot.layout) {
-          // range of the x axis
+        $('.myplot').each(function () {
+          var plot = this
+          if (plot.layout) {
+            // range of the x axis
             var [amin, amax] = plot.layout.xaxis.range
             // range of the currently loaded data
             var dmin = plot.data.map(t => t.x[0]).reduce((a, c) => a < c ? a : c)
@@ -418,7 +417,7 @@ $(document).ready(function () {
               plot.lmin = amin
               var url = 'data/' + plot.graph.name + '?start=' + amin.split('.')[0] + '&end=' + dmin.split('.')[0]
               Plotly.d3.csv(url, function (data) {
-              // prepend new data
+                // prepend new data
                 if (data) {
                   for (var i = data.length - 1; i >= 0; i--) {
                     var row = data[i]
@@ -435,13 +434,13 @@ $(document).ready(function () {
                 }
               })
             }
-            // see if we need to load data paste the currently loaded range
+            // see if we need to load data past the currently loaded range
             if (amax > plot.lmax) {
               plot.lmax = amax
               // load data from dmax to amax and append
               url = 'data/' + plot.graph.name + '?start=' + dmax.split('.')[0] + '&end=' + amax.split('.')[0]
               Plotly.d3.csv(url, function (data) {
-              // append new data
+                // append new data
                 if (data) {
                   for (var i = 0; i < data.length; i++) {
                     var row = data[i]
@@ -469,54 +468,54 @@ $(document).ready(function () {
 
   // every minute check if there is any new data
   function checkNewData() {
-    setTimeout(checkNewData, 60000);
-    [].forEach.call(document.getElementsByClassName('myplot'), plot => {
-      plot.lmax = undefined
+    setTimeout(checkNewData, 60000)
+    $('.myplot').each(function () {
+      this.lmax = undefined
     })
     updatedata = true
   }
   setTimeout(checkNewData, 60000)
 
   function addGraph(graph, size = 'sm') {
-    var clone = document.getElementById('template').firstElementChild.cloneNode(true)
-    var plot = clone.getElementsByClassName('myplot')[0]
-    var legend = clone.getElementsByClassName('mylegend')[0]
+    var clone = $('#template>:first-child').clone()
+    var plot = clone.find('.myplot')[0]
+    var legend = clone.find('.mylegend')
     plot.graph = graph
     // update graph title
-    $(clone).find('.graphtitle').text(graph.host + ' / ')
+    clone.find('.graphtitle').text(graph.host + ' / ')
       .append($('<b>').text(graph.graph_title))
       .tooltip({title: graph.graph_info || ''})
     // tooltip for drag handle
-    $(clone).find('.draghandle').tooltip({placement: 'right'})
+    clone.find('.draghandle').tooltip({placement: 'right'})
     // set the size changing actions
-    $(clone).find('.sizesm').tooltip({placement: 'right'}).click(function () {
-      $(clone).find('.sizeactive').removeClass('sizeactive')
+    clone.find('.sizesm').tooltip({placement: 'right'}).click(function () {
+      clone.find('.sizeactive').removeClass('sizeactive')
       $(this).addClass('sizeactive')
       $(plot).addClass('plot-sm').removeClass('plot-md plot-lg')
-      $(legend).addClass('legend-sm').removeClass('legend-md legend-lg')
+      legend.addClass('legend-sm').removeClass('legend-md legend-lg')
       Plotly.relayout(plot, {})
       saveCurrentGraphs()
     })
-    $(clone).find('.sizemd').tooltip({placement: 'right'}).click(function () {
-      $(clone).find('.sizeactive').removeClass('sizeactive')
+    clone.find('.sizemd').tooltip({placement: 'right'}).click(function () {
+      clone.find('.sizeactive').removeClass('sizeactive')
       $(this).addClass('sizeactive')
       $(plot).addClass('plot-md').removeClass('plot-sm plot-lg')
-      $(legend).addClass('legend-md').removeClass('legend-sm legend-lg')
+      legend.addClass('legend-md').removeClass('legend-sm legend-lg')
       Plotly.relayout(plot, {})
       saveCurrentGraphs()
     })
-    $(clone).find('.sizelg').tooltip({placement: 'right'}).click(function () {
-      $(clone).find('.sizeactive').removeClass('sizeactive')
+    clone.find('.sizelg').tooltip({placement: 'right'}).click(function () {
+      clone.find('.sizeactive').removeClass('sizeactive')
       $(this).addClass('sizeactive')
       $(plot).addClass('plot-lg').removeClass('plot-sm plot-md')
-      $(legend).addClass('legend-lg').removeClass('legend-sm legend-md')
+      legend.addClass('legend-lg').removeClass('legend-sm legend-md')
       Plotly.relayout(plot, {})
       saveCurrentGraphs()
     })
     // configure the close button
-    $(clone).find('.closegraph').tooltip({placement: 'right'}).click(function () {
+    clone.find('.closegraph').tooltip({placement: 'right'}).click(function () {
       $(this).tooltip('dispose')
-      $(clone).hide(400, function () {
+      clone.hide(400, function () {
         Plotly.purge(plot)
         $(this).remove()
         // after any changes, save the current list of graphs
@@ -525,15 +524,15 @@ $(document).ready(function () {
     })
     // set the wanted size
     $(plot).addClass('plot-' + size)
-    $(legend).addClass('legend-' + size)
-    $(clone).find('.sizeactive').removeClass('sizeactive')
-    $(clone).find('.size' + size).addClass('sizeactive')
+    legend.addClass('legend-' + size)
+    clone.find('.sizeactive').removeClass('sizeactive')
+    clone.find('.size' + size).addClass('sizeactive')
     // load the graph data
     loadGraph(plot, legend, graph)
     // enable tooltips on legend
-    $(clone).find('.mylegend *[title]').tooltip({placement: 'bottom', container: 'body'})
+    clone.find('.mylegend *[title]').tooltip({placement: 'bottom', container: 'body'})
     // show the graph
-    document.getElementById('draggablelist').appendChild(clone)
+    clone.appendTo('#draggablelist')
     return plot
   }
 
@@ -555,80 +554,55 @@ $(document).ready(function () {
       }
     }
     // update options in host selector
-    var groups = Object.keys(hosts)
-    groups.sort()
-    var hostselect = document.getElementById('hostselect')
-    for (var i = 0; i < groups.length; i++) {
-      var group = groups[i]
-      var groupelement = document.createElement('optgroup')
-      groupelement.setAttribute('label', group)
-      hosts[group].sort()
-      for (var j = 0; j < hosts[group].length; j++) {
-        var hostelement = document.createElement('option')
-        hostelement.setAttribute('value', group + '/' + hosts[group][j])
-        hostelement.textContent = hosts[group][j]
-        groupelement.appendChild(hostelement)
-      }
-      hostselect.appendChild(groupelement)
-    }
+    Object.keys(hosts).sort().forEach(function (group) {
+      var groupElement = $('<optgroup></optgroup>').attr('label', group)
+      hosts[group].sort().forEach(function (host) {
+        groupElement.append($('<option></option>').attr('value', group + '/' + host).text(host))
+      })
+      $('#hostselect').append(groupElement)
+    })
     // update options in category selector
-    categories.sort()
-    var categoryselect = document.getElementById('categoryselect')
-    for (i = 0; i < categories.length; i++) {
-      var categoryelement = document.createElement('option')
-      categoryelement.setAttribute('value', categories[i])
-      categoryelement.textContent = categories[i]
-      categoryselect.appendChild(categoryelement)
-    }
-    // build list of graphs
-    var graphnames = Object.keys(graphs)
-    graphnames.sort()
-    var graphfilter = document.getElementById('graphfilter')
+    categories.sort().forEach(function (category) {
+      $('#categoryselect').append($('<option></option>').attr('value', category).text(category))
+    })
     // handler for updating the choices in the graph select
     function updateGraphList() {
-      var host = hostselect.options[hostselect.selectedIndex].value
-      var category = categoryselect.options[categoryselect.selectedIndex].value
-      var search = graphfilter.value.toLowerCase().split(' ')
-      var graphselect = document.getElementById('graphselect')
-      graphselect.innerHTML = ''
-      graphnames.forEach(function (graph) {
-        if (host && !graph.startsWith(host)) {
+      var search = $('#graphfilter').val().toLowerCase().split(' ')
+      var hostFilter = $('#hostselect').val()
+      var categoryFilter = $('#categoryselect').val()
+      $('#graphselect').empty()
+      Object.keys(graphs).sort().forEach(function (graph) {
+        if (hostFilter && !graph.startsWith(hostFilter + '/')) {
           return
         }
-        if (category && graphs[graph].category !== category) {
+        if (categoryFilter && graphs[graph].category !== categoryFilter) {
           return
         }
         var descripton = (graph + ' ' + graphs[graph].graph_title + ' ' + graphs[graph].category).toLowerCase()
         if (search.some(x => !descripton.includes(x))) {
           return
         }
-        var graphelement = document.createElement('a')
-        graphelement.setAttribute('href', '#')
-        graphelement.setAttribute('class', 'list-group-item list-group-item-action')
-        graphelement.setAttribute('data-toggle', 'collapse')
-        graphelement.setAttribute('data-target', '#addgraph')
-        graphelement.textContent = graphs[graph].graph_title || graph.split('/')[2]
+        var title = graphs[graph].graph_title || graph.split('/')[2]
+        var graphelement = $('<a href="#" class="list-group-item list-group-item-action" data-toggle="collapse" data-target="#addgraph"></a>').text(title)
         // add the host graph unless a host graph has been selected
-        if (!host) {
-          var hostelement = document.createElement('small')
-          hostelement.textContent = graph.split('/')[1] + ' / '
-          graphelement.prepend(hostelement)
+        if (!hostFilter) {
+          graphelement.prepend($('<small></small>').text(graph.split('/')[1] + ' / '))
         }
-        graphselect.appendChild(graphelement)
-        graphelement.addEventListener('click', function () {
+        $('#graphselect').append(graphelement)
+        graphelement.click(function () {
           addGraph(graphs[graph])
         })
       })
-      graphfilter.focus()
+      $('#graphfilter').focus()
     }
-    hostselect.addEventListener('change', updateGraphList, false)
-    categoryselect.addEventListener('change', updateGraphList, false)
-    graphfilter.addEventListener('input', updateGraphList, false)
-    document.getElementsByClassName('addgraph')[0].getElementsByClassName('btn')[0].addEventListener('click', function () {
+    $('#hostselect').change(updateGraphList)
+    $('#categoryselect').change(updateGraphList)
+    $('#graphfilter').on('input', updateGraphList)
+    $('.addgraph button').click(function () {
       setTimeout(function () {
-        graphfilter.focus()
+        $('#graphfilter').focus()
       }, 100)
-    }, false)
+    })
     updateGraphList()
   }
 
