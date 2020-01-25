@@ -662,6 +662,19 @@ $(document).ready(function () {
     localStorage.setItem('shownGraphs', JSON.stringify(getCurrentGraphs()))
   }
 
+  // remove all graphs from the view
+  function clearGraphs() {
+    $('#draggablelist li').hide(400, function () {
+      Plotly.purge($('.myplot'))
+      $(this).remove()
+      // after any changes, save the current list of graphs
+      saveCurrentGraphs()
+      $('#clearGraphs').blur()
+    })
+  }
+
+  // configure the clearGraphs button
+  $('#clearGraphs').click(clearGraphs)
   // load information on available graphs
   $.getJSON('graphs', function (data) {
     updateSelect(data)
