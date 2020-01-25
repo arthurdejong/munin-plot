@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2019 Arthur de Jong
+# Copyright (C) 2018-2020 Arthur de Jong
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -18,6 +18,8 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
+"""Module that exposes the Munin data."""
+
 import math
 import os
 import re
@@ -27,6 +29,8 @@ from collections import defaultdict
 from functools import wraps
 
 
+# The directory that contains the Munin data files.
+# This is the dbdir option in munin.conf.
 MUNIN_DBDIR = '/var/lib/munin'
 
 

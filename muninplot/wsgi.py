@@ -18,6 +18,8 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
+"""Simple WSGI application to run the munin-plot application."""
+
 import cgi
 import json
 import os
@@ -29,9 +31,9 @@ from muninplot.data import get_info, get_resolutions, get_values
 
 
 def static_serve(environ, start_response):
+    """Server static files that are shipped with the package."""
     path = environ.get('PATH_INFO', '').lstrip('/') or 'index.html'
     path = os.path.normpath(os.sep + path).lstrip(os.sep)
-    path = os.path.join('static', path)
     if path.endswith('.html'):
         content_type = 'text/html; charset=utf-8'
     elif path.endswith('.js'):
@@ -46,6 +48,7 @@ def static_serve(environ, start_response):
         content_type = 'application/octet-stream'
     csp = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; " + \
           "script-src 'self' 'unsafe-eval'; frame-ancestors 'none'"
+    path = os.path.join('static', path)
     if not pkg_resources.resource_exists('muninplot', path):
         start_response('404 NOT FOUND', [
             ('Content-Type', 'text/plain'),
@@ -58,6 +61,7 @@ def static_serve(environ, start_response):
 
 
 def list_graphs(environ, start_response):
+    """Return the known Munin graphs as JSON."""
     start_response('200 OK', [
         ('Content-Type', 'application/json')])
     return [json.dumps(get_info(), indent=2, sort_keys=True).encode('utf-8')]
@@ -87,6 +91,7 @@ def _parse_timestamp(timestamp):
 
 
 def get_data(environ, start_response):
+    """Return a data series for the graph as CSV."""
     path = environ.get('PATH_INFO', '').lstrip('/')
     _, group, host, graph = path.split('/')
     last_update, resolutions = get_resolutions(group, host, graph)
@@ -122,6 +127,7 @@ def get_data(environ, start_response):
 
 
 def application(environ, start_response):
+    """Serve munin-plot WSGI application."""
     # get request path
     path = environ.get('PATH_INFO', '').lstrip('/')
     if path.startswith('graphs'):

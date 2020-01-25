@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2019 Arthur de Jong
+# Copyright (C) 2018-2020 Arthur de Jong
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -18,6 +18,8 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
+"""Development server that runs the WSGI application."""
+
 import sys
 from wsgiref.simple_server import make_server
 
@@ -25,7 +27,7 @@ from muninplot.wsgi import application
 
 
 def devserver():
-
+    """Run a development server."""
     sys.stdout = sys.stderr
     srv = make_server('0.0.0.0', 8080, application)
     srv.serve_forever()
