@@ -647,23 +647,16 @@ $(document).ready(function () {
     })
   }
 
-  // configure the clearGraphs button
-  $('#clearGraphs').click(clearGraphs)
-  // load information on available graphs
-  $.getJSON('graphs', function (data) {
-    updateSelect(data)
-    // hide loading indicator and show normal interface
-    $('.loadingrow').hide()
-    $('.addgraph').show()
-    $('nav .d-none').removeClass('d-none')
-    // restore previous list of graphs
-    try {
-      JSON.parse(localStorage.getItem('shownGraphs')).forEach(function (graph) {
-        // lookup the graph by name
-        var plot = addGraph(data[graph.name], graph.size || 'sm')
-        // hide fields
-        if (graph.hidden && graph.hidden.length) {
-          graph.hidden.forEach(function (field) {
+  // restore the list of graphs as defined in the provided list
+  function setGraphs(graphs) {
+    clearGraphs()
+    graphs.forEach(function (graph) {
+      // lookup the graph by name
+      var plot = addGraph(document.graph_data[graph.name], graph.size || 'sm')
+      // hide fields
+      if (graph.hidden && graph.hidden.length) {
+        graph.hidden.forEach(function (field) {
+          if (plot.tracebyfield[field]) {
             plot.tracebyfield[field].visible = false
             if (plot.tracebyfield[field + '.min']) {
               plot.tracebyfield[field + '.min'].visible = false
@@ -672,9 +665,25 @@ $(document).ready(function () {
               plot.tracebyfield[field + '.max'].showlegend = false
             }
             plot.legendbyfield[field].style.opacity = 0.2
-          })
-        }
-      })
+          }
+        })
+      }
+    })
+  }
+
+  // configure the clearGraphs button
+  $('#clearGraphs').click(clearGraphs)
+  // load information on available graphs
+  $.getJSON('graphs', function (data) {
+    document.graph_data = data
+    updateSelect(data)
+    // hide loading indicator and show normal interface
+    $('.loadingrow').hide()
+    $('.addgraph').show()
+    $('nav .d-none').removeClass('d-none')
+    // restore previous list of graphs
+    try {
+      setGraphs(JSON.parse(localStorage.getItem('shownGraphs')))
     } catch (error) {}
   })
 })
