@@ -662,35 +662,32 @@ $(document).ready(function () {
     localStorage.setItem('shownGraphs', JSON.stringify(getCurrentGraphs()))
   }
 
-  // function to load information on available graphs
-  function loadGraphInformation() {
-    $.getJSON('graphs', function (data) {
-      updateSelect(data)
-      // hide loading indicator
-      document.getElementsByClassName('addgraph')[0].style.display = 'flex'
-      document.getElementsByClassName('loadingrow')[0].style.display = 'none'
-      // restore previous list of graphs
-      try {
-        JSON.parse(localStorage.getItem('shownGraphs')).forEach(function (graph) {
-          // lookup the graph by name
-          var plot = addGraph(data[graph.name], graph.size || 'sm')
-          // hide fields
-          if (graph.hidden && graph.hidden.length) {
-            graph.hidden.forEach(function (field) {
-              plot.tracebyfield[field].visible = false
-              if (plot.tracebyfield[field + '.min']) {
-                plot.tracebyfield[field + '.min'].visible = false
-                plot.tracebyfield[field + '.min'].showlegend = false
-                plot.tracebyfield[field + '.max'].visible = false
-                plot.tracebyfield[field + '.max'].showlegend = false
-              }
-              plot.legendbyfield[field].style.opacity = 0.2
-            })
-          }
-        })
-      } catch (error) {}
-    })
-  }
-
-  loadGraphInformation()
+  // load information on available graphs
+  $.getJSON('graphs', function (data) {
+    updateSelect(data)
+    // hide loading indicator and show normal interface
+    $('.loadingrow').hide()
+    $('.addgraph').show()
+    $('nav .d-none').removeClass('d-none')
+    // restore previous list of graphs
+    try {
+      JSON.parse(localStorage.getItem('shownGraphs')).forEach(function (graph) {
+        // lookup the graph by name
+        var plot = addGraph(data[graph.name], graph.size || 'sm')
+        // hide fields
+        if (graph.hidden && graph.hidden.length) {
+          graph.hidden.forEach(function (field) {
+            plot.tracebyfield[field].visible = false
+            if (plot.tracebyfield[field + '.min']) {
+              plot.tracebyfield[field + '.min'].visible = false
+              plot.tracebyfield[field + '.min'].showlegend = false
+              plot.tracebyfield[field + '.max'].visible = false
+              plot.tracebyfield[field + '.max'].showlegend = false
+            }
+            plot.legendbyfield[field].style.opacity = 0.2
+          })
+        }
+      })
+    } catch (error) {}
+  })
 })
