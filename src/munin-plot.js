@@ -672,7 +672,29 @@ $(document).ready(function () {
   }
 
   // configure the clearGraphs button
-  $('#clearGraphs').click(clearGraphs)
+  $('#clearGraphs').click(function () {
+    clearGraphs()
+    $('#dashboards button.dropdown-toggle span').text('Dashboards')
+  })
+
+  // configure the dashboards button
+  $.getJSON('dashboards', function (dashboards) {
+    if (Object.keys(dashboards).length === 0) {
+      $('#dashboards').remove()
+    } else {
+      Object.keys(dashboards).sort().forEach(function (name) {
+        var option = $('<button class="dropdown-item" type="button">').text(name)
+        $('#dashboards .dropdown-menu').append(option)
+        option.click(function () {
+          var dashboard = dashboards[name]
+          setGraphs(dashboard.graphs)
+          setDateRange(dashboard.dateRange.start, dashboard.dateRange.end)
+          $('#dashboards button.dropdown-toggle span').text(name)
+        })
+      })
+    }
+  })
+
   // load information on available graphs
   $.getJSON('graphs', function (data) {
     document.graph_data = data

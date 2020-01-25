@@ -30,6 +30,10 @@ import pkg_resources
 from muninplot.data import get_info, get_resolutions, get_values
 
 
+# The directory that contains the JSON files that describe the dashboards
+DASHBOARDS_DIR = os.environ.get('DASHBOARDS_DIR', None)
+
+
 def static_serve(environ, start_response):
     """Server static files that are shipped with the package."""
     path = environ.get('PATH_INFO', '').lstrip('/') or 'index.html'
@@ -65,6 +69,24 @@ def list_graphs(environ, start_response):
     start_response('200 OK', [
         ('Content-Type', 'application/json')])
     return [json.dumps(get_info(), indent=2, sort_keys=True).encode('utf-8')]
+
+
+def list_dashboards(environ, start_response):
+    """Return the configured dashboards as JSON."""
+    dashboards = {}
+    # Go over DASHBOARDS_DIR and load JSON files from that
+    dashboards_dir = environ.get('DASHBOARDS_DIR', DASHBOARDS_DIR)
+    if dashboards_dir and os.path.isdir(dashboards_dir):
+        for filename in sorted(os.listdir(dashboards_dir)):
+            filename = os.path.join(dashboards_dir, filename)
+            if filename.endswith('.json') and os.path.isfile(filename):
+                with open(filename, 'rt') as f:
+                    dashboard = json.load(f)
+                    dashboard.setdefault('name', os.path.basename(filename)[:-5])
+                    dashboards[dashboard['name']] = dashboard
+    start_response('200 OK', [
+        ('Content-Type', 'application/json')])
+    return [json.dumps(dashboards, indent=2, sort_keys=True).encode('utf-8')]
 
 
 def _field_key(x):
@@ -116,7 +138,7 @@ def get_data(environ, start_response):
                 end = s
     # return the values as CSV
     start_response('200 OK', [
-        ('Content-Type', 'text/plain')])
+        ('Content-Type', 'text/csv')])
     if values:
         keys = (x for x in values[0].keys() if x != 'remove')
         keys = ['time'] + sorted((k for k in keys if k != 'time'), key=_field_key)
@@ -132,6 +154,8 @@ def application(environ, start_response):
     path = environ.get('PATH_INFO', '').lstrip('/')
     if path.startswith('graphs'):
         return list_graphs(environ, start_response)
+    if path.startswith('dashboards'):
+        return list_dashboards(environ, start_response)
     elif path.startswith('data/'):
         return get_data(environ, start_response)
     else:
