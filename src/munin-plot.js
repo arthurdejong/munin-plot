@@ -376,14 +376,14 @@ $(document).ready(function () {
       Plotly.react(plot, traces, layout, config)
       updateLegend(plot)
       updatedata = true
-      // handle plot changes
-      plot.on('plotly_relayout', function (ed) {
-        updatedata = true
-        if (ed['xaxis.range[0]'] && ed['xaxis.range[1]']) {
-          setDateRange(ed['xaxis.range[0]'], ed['xaxis.range[1]'])
+      // handle plot zoom changes
+      plot.on('plotly_relayout', function (data) {
+        if (data['xaxis.range[0]'] && data['xaxis.range[1]']) {
+          updatedata = true
+          setDateRange(data['xaxis.range[0]'], data['xaxis.range[1]'])
+          // update the legend values
+          updateLegend(plot)
         }
-        // update the legend values
-        updateLegend(plot)
       })
       // after any changes, save the current list of graphs
       saveCurrentGraphs()
