@@ -15,7 +15,7 @@
     "@fortawesome/fontawesome-free": "^5.13.0",
     "bootstrap": "^4.4.1",
     "daterangepicker": "^3.0.5",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "jquery-ui": "^1.12.1",
     "plotly.js": "^1.53.0",
     "popper.js": "^1.16.1"
