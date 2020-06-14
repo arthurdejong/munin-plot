@@ -301,6 +301,10 @@ $(document).ready(function () {
       tracebyfield[field].x = []
       tracebyfield[field].y = []
     })
+    // if there are too many traces only hover on the nearest
+    if (traces.filter(trace => trace.showlegend !== false).length > 6) {
+      layout.hovermode = 'closest'
+    }
     // build the legend
     plot.legendbyfield = {}
     traces.slice().reverse().forEach(function (trace) {
