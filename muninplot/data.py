@@ -82,13 +82,14 @@ def get_info():
                 fields.setdefault(field, dict(name=field))
                 if key not in ('graph_data_size', 'update_rate'):
                     fields[field][key] = value
-        # clean up field information
+        # remove graph=no from negative fields
         for _field, field_info in fields.items():
-            # remove graph=no from negative fields
             negative = field_info.get('negative')
             if negative:
                 fields[negative].pop('graph', None)
-            # remove graph = no and replace by removing draw
+                fields[negative].setdefault('draw', field_info.get('draw', 'LINE'))
+        # remove graph = no and replace by removing draw
+        for _field, field_info in fields.items():
             if field_info.pop('graph', '').lower() in ('false', 'no', '0'):
                 field_info.pop('draw', None)
             else:
