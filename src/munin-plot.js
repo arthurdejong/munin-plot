@@ -419,7 +419,7 @@ $(document).ready(function () {
             // see if we need to load data before the currently loaded range
             if (amin < plot.lmin) {
               plot.lmin = amin
-              var url = 'data/' + plot.graph.name + '?start=' + amin.split('.')[0] + '&end=' + dmin.split('.')[0]
+              var url = 'data/' + plot.graph.name + '?start=' + amin.substring(0, 16) + '&end=' + dmin.substring(0, 16)
               Plotly.d3.csv(url, function (data) {
                 // prepend new data
                 if (data) {
@@ -442,7 +442,7 @@ $(document).ready(function () {
             if (amax > plot.lmax) {
               plot.lmax = amax
               // load data from dmax to amax and append
-              url = 'data/' + plot.graph.name + '?start=' + dmax.split('.')[0] + '&end=' + amax.split('.')[0]
+              url = 'data/' + plot.graph.name + '?start=' + dmax.substring(0, 16) + '&end=' + amax.substring(0, 16)
               Plotly.d3.csv(url, function (data) {
                 // append new data
                 if (data) {
