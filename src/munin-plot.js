@@ -83,7 +83,7 @@ $(document).ready(function () {
       if (this.layout) {
         const xaxis = this.layout.xaxis
         if ((xaxis.range[0] !== start) || (xaxis.range[1] !== end)) {
-          Plotly.relayout(this, {'xaxis.range': [start, end]})
+          Plotly.relayout(this, {'xaxis.range[0]': start, 'xaxis.range[1]': end})
         }
       }
     })
