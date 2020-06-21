@@ -31,7 +31,7 @@ from functools import wraps
 
 # The directory that contains the Munin data files.
 # This is the dbdir option in munin.conf.
-MUNIN_DBDIR = '/var/lib/munin'
+MUNIN_DBDIR = os.environ.get('MUNIN_DBDIR', '/var/lib/munin')
 
 
 def cache(function):

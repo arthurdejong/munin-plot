@@ -150,6 +150,10 @@ def get_data(environ, start_response):
 
 def application(environ, start_response):
     """Serve munin-plot WSGI application."""
+    # override MUNIN_DBDIR
+    if 'MUNIN_DBDIR' in environ:
+        import muninplot.data
+        muninplot.data.MUNIN_DBDIR = environ['MUNIN_DBDIR']
     # get request path
     path = environ.get('PATH_INFO', '').lstrip('/')
     if path.startswith('graphs'):
