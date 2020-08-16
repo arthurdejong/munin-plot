@@ -725,6 +725,22 @@ $(document).ready(function () {
     $('#saveDashboard .alert').remove()
   })
 
+  // output readable but compact JSON
+  function getSaveDashboardData() {
+    var value = '{\n'
+    var name = $('#saveDashboardName').val()
+    if (name) {
+      value += '  "name": ' + JSON.stringify(name) + ',\n'
+    }
+    if ($('#saveDashboardDateRange:checked').length) {
+      var dateRange = JSON.parse(localStorage.getItem('dateRange'))
+      value += '  "dateRange": ' + JSON.stringify(dateRange) + ',\n'
+    }
+    var graphs = JSON.parse(localStorage.getItem('shownGraphs'))
+    value += '  "graphs": ' + JSON.stringify(graphs) + '\n}'
+    return value
+  }
+
   // save dialog copy data to clipboard
   $('#saveDashboardClipboard').on('click', function (event) {
     // create a temporary text area
@@ -735,17 +751,7 @@ $(document).ready(function () {
       top: '-1000px'
     })
     // fill text area with JSON
-    textarea.value = '{\n'
-    var name = $('#saveDashboardName').val()
-    if (name) {
-      textarea.value += '  "name": ' + JSON.stringify(name) + ',\n'
-    }
-    if ($('#saveDashboardDateRange:checked').length) {
-      var dateRange = JSON.parse(localStorage.getItem('dateRange'))
-      textarea.value += '  "dateRange": ' + JSON.stringify(dateRange) + ',\n'
-    }
-    var graphs = JSON.parse(localStorage.getItem('shownGraphs'))
-    textarea.value += '  "graphs": ' + JSON.stringify(graphs) + '\n}'
+    textarea.value = getSaveDashboardData()
     // copy text area to clipboard
     $('#saveDashboard form').append(textarea)
     textarea.select()
@@ -758,6 +764,18 @@ $(document).ready(function () {
         $('#saveDashboard').modal('hide')
       }, 600)
     })
+  })
+
+  // save dashboard definition to file
+  $('#saveDashboardFile').on('click', function (event) {
+    var element = document.createElement('a')
+    element.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent(getSaveDashboardData() + '\n'))
+    element.setAttribute('download', 'dashboard.json')
+    element.style.display = 'none'
+    document.body.appendChild(element)
+    element.click()
+    document.body.removeChild(element)
+    $('#saveDashboard').modal('hide')
   })
 
   // handle showing and hiding of the load dashboard dialog
