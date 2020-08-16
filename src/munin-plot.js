@@ -787,6 +787,19 @@ $(document).ready(function () {
     $('#loadDashboard .alert').remove()
   })
 
+  // load dashboard definition from file into text area
+  $('#loadDashboardFileBtn').on('click', function (event) {
+    $('#loadDashboardFile').click()
+  })
+  $('#loadDashboardFile').on('change', function (event) {
+    var reader = new FileReader()
+    reader.onload = function (e) {
+      $('#loadDashboardData').val(e.target.result)
+    }
+    reader.readAsText(this.files[0], 'utf-8')
+    $(this).val('')
+  })
+
   // load dashboard
   $('#loadDashboardGo').on('click', function (event) {
     try {
