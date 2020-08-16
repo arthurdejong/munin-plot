@@ -709,4 +709,48 @@ $(document).ready(function () {
       setGraphs(JSON.parse(localStorage.getItem('shownGraphs')))
     } catch (error) {}
   })
+
+  // handle showing and hiding of the save dashboard dialog
+  $('#saveDashboard').on('shown.bs.modal', function () {
+    $('#saveDashboardName').trigger('focus')
+  })
+  $('#saveDashboard').on('hidden.bs.modal', function () {
+    $('#saveDashboardName').val('')
+    $('#saveDashboard .alert').remove()
+  })
+
+  // save dialog copy data to clipboard
+  $('#saveDashboardClipboard').on('click', function (event) {
+    // create a temporary text area
+    var textarea = document.createElement('textarea')
+    $(textarea).css({
+      position: 'absolute',
+      left: '-1000px',
+      top: '-1000px'
+    })
+    // fill text area with JSON
+    textarea.value = '{\n'
+    var name = $('#saveDashboardName').val()
+    if (name) {
+      textarea.value += '  "name": ' + JSON.stringify(name) + ',\n'
+    }
+    if ($('#saveDashboardDateRange:checked').length) {
+      var dateRange = JSON.parse(localStorage.getItem('dateRange'))
+      textarea.value += '  "dateRange": ' + JSON.stringify(dateRange) + ',\n'
+    }
+    var graphs = JSON.parse(localStorage.getItem('shownGraphs'))
+    textarea.value += '  "graphs": ' + JSON.stringify(graphs) + '\n}'
+    // copy text area to clipboard
+    $('#saveDashboard form').append(textarea)
+    textarea.select()
+    textarea.setSelectionRange(0, 99999)
+    document.execCommand('copy')
+    $('#saveDashboard form textarea').remove()
+    // show notification
+    $('<div class="alert alert-success">Copied to clipboard</div>').hide().appendTo('#saveDashboard .modal-body').show(200, function () {
+      setTimeout(function () {
+        $('#saveDashboard').modal('hide')
+      }, 600)
+    })
+  })
 })
