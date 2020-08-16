@@ -50,6 +50,7 @@
         </button>
         <div class="dropdown-menu"></div>
       </div>
+      <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#loadDashboard" title="Load dashboard" id="loadDashboardBtn"><i class="fa fa-file-import"></i></button>
       <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#saveDashboard" title="Save dashboard"><i class="fa fa-save"></i></button>
     </div>
     <div id="reportrange" class="dropdown-toggle btn btn-outline-secondary ml-auto d-none">
@@ -137,6 +138,29 @@
       </div>
     </div>
 
+  </div>
+
+  <div class="modal fade" id="loadDashboard" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <form class="needs-validation" novalidate>
+          <div class="modal-header">
+            <h5 class="modal-title">Load dashboard</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <textarea class="form-control text-nowrap" id="loadDashboardData" rows="5" placeholder="Paste JSON here"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-sm btn-primary" id="loadDashboardGo" title="Load dashboard">Load</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 
   <div class="modal fade" id="saveDashboard" tabindex="-1" role="dialog">

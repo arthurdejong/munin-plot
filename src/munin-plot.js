@@ -689,10 +689,16 @@ $(document).ready(function () {
         option.click(function () {
           var dashboard = dashboards[name]
           setGraphs(dashboard.graphs)
-          setDateRange(dashboard.dateRange.start, dashboard.dateRange.end)
+          if (dashboard.dateRange) {
+            setDateRange(dashboard.dateRange.start, dashboard.dateRange.end)
+          }
           $('#dashboards button.dropdown-toggle span').text(name)
         })
       })
+      // add import action
+      $('#dashboards .dropdown-menu').append('<div class="dropdown-divider"></div>')
+      $('#loadDashboardBtn').removeClass('btn btn-outline-secondary').addClass('dropdown-item')
+      $('#dashboards .dropdown-menu').append($('#loadDashboardBtn').append(' Load'))
     }
   })
 
@@ -752,5 +758,34 @@ $(document).ready(function () {
         $('#saveDashboard').modal('hide')
       }, 600)
     })
+  })
+
+  // handle showing and hiding of the load dashboard dialog
+  $('#loadDashboard').on('shown.bs.modal', function () {
+    $('#loadDashboardData').trigger('focus')
+  })
+  $('#loadDashboard').on('hidden.bs.modal', function () {
+    $('#loadDashboardData').val('')
+    $('#loadDashboard .alert').remove()
+  })
+
+  // load dashboard
+  $('#loadDashboardGo').on('click', function (event) {
+    try {
+      var dashboard = JSON.parse($('#loadDashboardData').val())
+      if (dashboard) {
+        setGraphs(dashboard.graphs)
+        if (dashboard.dateRange) {
+          setDateRange(dashboard.dateRange.start, dashboard.dateRange.end)
+        }
+        if (dashboard.name) {
+          $('#dashboards button.dropdown-toggle span').text(dashboard.name)
+        }
+        $('#loadDashboard').modal('hide')
+      }
+    } catch (e) {
+      $('#loadDashboard .alert').remove()
+      $('<div class="alert alert-danger"></div>').text('Error: ' + e.name + ': ' + e.message).hide().appendTo('#loadDashboard .modal-body').show(200)
+    }
   })
 })
