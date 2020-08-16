@@ -105,11 +105,8 @@ $(document).ready(function () {
     alwaysShowCalendars: true,
     ranges: {
       Today: [moment().subtract(1, 'days').round10Minutes(), moment().add(1, 'hour').round10Minutes('ceil')],
-      Yesterday: [moment().subtract(1, 'days').startOf('day'), moment().subtract(1, 'days').endOf('day').round10Minutes('ceil')],
-      'Last 7 days': [moment().subtract(6, 'days').startOf('day'), moment().endOf('day').round10Minutes('ceil')],
-      'Last 30 days': [moment().subtract(29, 'days').startOf('day'), moment().endOf('day').round10Minutes('ceil')],
-      'This month': [moment().startOf('month'), moment().endOf('month').round10Minutes('ceil')],
-      'Last month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month').round10Minutes('ceil')],
+      'This week': [moment().subtract(6, 'days').startOf('day'), moment().endOf('day').round10Minutes('ceil')],
+      'This month': [moment().subtract(32, 'days').startOf('day'), moment().endOf('day').round10Minutes('ceil')],
       'This year': [moment().subtract(365, 'days').startOf('month'), moment().endOf('month').round10Minutes('ceil')]
     }
   }, setDateRange)
