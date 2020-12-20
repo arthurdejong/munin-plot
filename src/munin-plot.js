@@ -70,7 +70,7 @@ $(document).ready(function () {
     start.round10Minutes('floor')
     end.round10Minutes('ceil')
     // update the date range picker
-    var daterangepicker = $('#reportrange').data('daterangepicker')
+    const daterangepicker = $('#reportrange').data('daterangepicker')
     daterangepicker.setStartDate(start)
     daterangepicker.setEndDate(end)
     // ensure start and end are strings
@@ -113,21 +113,21 @@ $(document).ready(function () {
 
   try {
     // restore the previously saved date range
-    var data = JSON.parse(localStorage.getItem('dateRange'))
+    const data = JSON.parse(localStorage.getItem('dateRange'))
     setDateRange(data.start, data.end)
   } catch (error) {
     // set a default date range
     setDateRange(moment().subtract(2, 'days'), moment().add(1, 'hour').round10Minutes('ceil'))
   }
 
-  var defaultColors = [
+  const defaultColors = [
     '#00cc00', '#0066b3', '#ff8000', '#dbc300', '#330099', '#990099',
     '#bce617', '#ff0000', '#808080', '#008f00', '#00487d', '#b35a00',
     '#b38f00', '#6b006b', '#8fb300', '#b30000', '#bebebe', '#80ff80',
     '#80c9ff', '#ffc080', '#ffe680', '#aa80ff', '#ee00cc', '#ff8080',
     '#666600', '#ffbfff', '#00ffcc', '#cc6699', '#999900']
 
-  var baseLayout = {
+  const baseLayout = {
     margin: {l: 48, t: 0, r: 8, b: 32},
     autosize: true,
     showlegend: false,
@@ -162,7 +162,7 @@ $(document).ready(function () {
     datarevision: 1
   }
 
-  var config = {
+  const config = {
     showLink: false,
     displaylogo: false,
     autosizable: true,
@@ -181,23 +181,24 @@ $(document).ready(function () {
   }
 
   // whether new data should be loaded
-  var updatedata = false
+  let updatedata = false
 
   // update the legend
   function updateLegend(plot) {
-    var [minx, maxx] = plot.layout.xaxis.range
+    const [minx, maxx] = plot.layout.xaxis.range
     Object.keys(plot.legendbyfield).forEach(function (field) {
       // calculate minimum
-      var mintrace = plot.tracebyfield[field + '.min']
-      var minvalue = Math.min.apply(null, mintrace.y.filter(function (el, idx) {
-        var x = mintrace.x[idx]
+      const mintrace = plot.tracebyfield[field + '.min']
+      const minvalue = Math.min.apply(null, mintrace.y.filter(function (el, idx) {
+        const x = mintrace.x[idx]
         return x >= minx && x <= maxx
       }))
       // calculate average
-      var avgtrace = plot.tracebyfield[field]
+      const avgtrace = plot.tracebyfield[field]
+      let avgvalue
       if (avgtrace.y.length) {
-        var avgvalue = avgtrace.y.map(function (current, idx) {
-          var x = avgtrace.x[idx]
+        avgvalue = avgtrace.y.map(function (current, idx) {
+          const x = avgtrace.x[idx]
           if (idx > 0 && x >= minx && x <= maxx) {
             return [current, Date.parse(x) - Date.parse(avgtrace.x[idx - 1])]
           } else {
@@ -211,13 +212,13 @@ $(document).ready(function () {
         avgvalue = undefined
       }
       // calculate maximum
-      var maxtrace = plot.tracebyfield[field + '.max']
-      var maxvalue = Math.max.apply(null, maxtrace.y.filter(function (el, idx) {
-        var x = maxtrace.x[idx]
+      const maxtrace = plot.tracebyfield[field + '.max']
+      const maxvalue = Math.max.apply(null, maxtrace.y.filter(function (el, idx) {
+        const x = maxtrace.x[idx]
         return x >= minx && x <= maxx
       }))
       // update legend
-      var columns = $(plot.legendbyfield[field]).find('td')
+      const columns = $(plot.legendbyfield[field]).find('td')
       columns[2].textContent = (isNaN(minvalue) || !isFinite(minvalue)) ? '-' : Plotly.d3.format('.4s')(minvalue)
       columns[3].textContent = (isNaN(avgvalue) || !isFinite(avgvalue)) ? '-' : Plotly.d3.format('.4s')(avgvalue)
       columns[4].textContent = (isNaN(maxvalue) || !isFinite(maxvalue)) ? '-' : Plotly.d3.format('.4s')(maxvalue)
@@ -227,7 +228,7 @@ $(document).ready(function () {
   // load graph data into the plot
   function loadGraph(plot, legend, graph) {
     // prepare the graph configuration
-    var layout = JSON.parse(JSON.stringify(baseLayout))
+    const layout = JSON.parse(JSON.stringify(baseLayout))
     if (graph.graph_vlabel) {
       layout.yaxis.title = graph.graph_vlabel
     }
@@ -236,23 +237,23 @@ $(document).ready(function () {
       layout.yaxis.exponentformat = 'E'
     }
     // get x axis zoom from date range selector
-    var daterangepicker = $('#reportrange').data('daterangepicker')
+    const daterangepicker = $('#reportrange').data('daterangepicker')
     layout.xaxis.range = [
       daterangepicker.startDate.format('YYYY-MM-DD HH:mm'),
       daterangepicker.endDate.format('YYYY-MM-DD HH:mm')]
     // prepare the data series configuration
-    var traces = []
-    var tracebyfield = {}
+    const traces = []
+    const tracebyfield = {}
     plot.tracebyfield = tracebyfield
-    var stackgroup = 0
-    for (var i = 0; i < graph.fields.length; i++) {
-      var field = graph.fields[i]
-      var color = field.colour ? '#' + field.colour : defaultColors[i % defaultColors.length]
+    let stackgroup = 0
+    for (let i = 0; i < graph.fields.length; i++) {
+      const field = graph.fields[i]
+      const color = field.colour ? '#' + field.colour : defaultColors[i % defaultColors.length]
       if (field.draw === 'AREA' || field.draw === 'STACK' || field.draw === 'AREASTACK') {
         if (!field.draw.match(/STACK/) && (!graph.fields[i + 1] || graph.fields[i + 1].draw.match(/STACK/))) {
           stackgroup += 1
         }
-        var trace = {
+        const trace = {
           field_name: field.name,
           name: field.label || field.name,
           info: field.info || '',
@@ -266,20 +267,20 @@ $(document).ready(function () {
         tracebyfield[field.name + '.min'] = {}
         tracebyfield[field.name + '.max'] = {}
       } else if (field.draw) {
-        trace = {
+        const trace = {
           field_name: field.name,
           name: field.label || field.name,
           info: field.info || '',
           line: {color: color},
           hoverlabel: {bgcolor: color + 'c0'}
         }
-        var minTrace = {
+        const minTrace = {
           field_name: field.name,
           showlegend: false,
           hoverinfo: 'skip',
           line: {width: 0}
         }
-        var maxTrace = {
+        const maxTrace = {
           field_name: field.name,
           showlegend: false,
           hoverinfo: 'skip',
@@ -306,7 +307,7 @@ $(document).ready(function () {
     plot.legendbyfield = {}
     traces.slice().reverse().forEach(function (trace) {
       if (trace.showlegend !== false) {
-        var legendrow = $('<tr></tr>')
+        const legendrow = $('<tr></tr>')
         legendrow.append($('<td style="width: 30px;"><svg height="10" width="20"><line x1="0" y1="5" x2="20" y2="5"></svg></td>'))
         legendrow.append($('<td><span></span></td>'))
         legendrow.append($('<td></td>'))
@@ -323,7 +324,7 @@ $(document).ready(function () {
         // handle showing/hiding the trace
         legendrow.click(function () {
           if (plot.data) {
-            var visible = (trace.visible === false)
+            const visible = (trace.visible === false)
             $(this).css('opacity', visible ? 1 : 0.2)
             plot.data.forEach(function (t) {
               if (t.field_name === trace.field_name) {
@@ -337,7 +338,7 @@ $(document).ready(function () {
         // highlight the trace by lowering the opacity of the others
         legendrow.mouseover(function () {
           if (plot.data) {
-            var vals = plot.data.map(t => t.field_name === trace.field_name ? 1 : 0.1)
+            let vals = plot.data.map(t => t.field_name === trace.field_name ? 1 : 0.1)
             Plotly.restyle(plot, 'opacity', vals)
             vals = plot.data.map(function (t) {
               if (t.showlegend === false) {
@@ -354,7 +355,7 @@ $(document).ready(function () {
     legend.mouseout(function () {
       if (plot.data) {
         Plotly.restyle(plot, 'opacity', plot.data.map(t => 1))
-        var vals = plot.data.map(function (t) {
+        const vals = plot.data.map(function (t) {
           if (t.showlegend === false) {
             return t.fillcolor
           }
@@ -366,8 +367,8 @@ $(document).ready(function () {
     // fetch the data and plot it
     // TODO: probably skip this initial load???
     Plotly.d3.csv('data/' + graph.name, function (data) {
-      for (var i = 0; i < data.length; i++) {
-        var row = data[i]
+      for (let i = 0; i < data.length; i++) {
+        const row = data[i]
         Object.keys(tracebyfield).forEach(function (field) {
           tracebyfield[field].x.push(row.time)
           tracebyfield[field].y.push(Number(row[field]))
@@ -398,13 +399,13 @@ $(document).ready(function () {
         updatedata = false
         // go over all plots
         $('.myplot').each(function () {
-          var plot = this
+          const plot = this
           if (plot.layout) {
             // range of the x axis
-            var [amin, amax] = plot.layout.xaxis.range
+            const [amin, amax] = plot.layout.xaxis.range
             // range of the currently loaded data
-            var dmin = plot.data.map(t => t.x[0]).reduce((a, c) => a < c ? a : c)
-            var dmax = plot.data.map(t => t.x[t.x.length - 1]).reduce((a, c) => a > c ? a : c)
+            const dmin = plot.data.map(t => t.x[0]).reduce((a, c) => a < c ? a : c)
+            const dmax = plot.data.map(t => t.x[t.x.length - 1]).reduce((a, c) => a > c ? a : c)
             // range that we have marked as loaded
             // (to avoid retrying to load data that isn't there)
             if (!plot.lmin) {
@@ -416,13 +417,13 @@ $(document).ready(function () {
             // see if we need to load data before the currently loaded range
             if (amin < plot.lmin) {
               plot.lmin = amin
-              var url = 'data/' + plot.graph.name + '?start=' + amin.substring(0, 16) + '&end=' + dmin.substring(0, 16)
+              const url = 'data/' + plot.graph.name + '?start=' + amin.substring(0, 16) + '&end=' + dmin.substring(0, 16)
               Plotly.d3.csv(url, function (data) {
                 // prepend new data
                 if (data) {
-                  for (var i = data.length - 1; i >= 0; i--) {
-                    var row = data[i]
-                    var time = row.time
+                  for (let i = data.length - 1; i >= 0; i--) {
+                    const row = data[i]
+                    const time = row.time
                     Object.entries(plot.tracebyfield).forEach(function ([field, trace]) {
                       if (time < trace.x[0]) {
                         trace.x.splice(0, 0, time)
@@ -439,13 +440,13 @@ $(document).ready(function () {
             if (amax > plot.lmax) {
               plot.lmax = amax
               // load data from dmax to amax and append
-              url = 'data/' + plot.graph.name + '?start=' + dmax.substring(0, 16) + '&end=' + amax.substring(0, 16)
+              const url = 'data/' + plot.graph.name + '?start=' + dmax.substring(0, 16) + '&end=' + amax.substring(0, 16)
               Plotly.d3.csv(url, function (data) {
                 // append new data
                 if (data) {
-                  for (var i = 0; i < data.length; i++) {
-                    var row = data[i]
-                    var time = row.time
+                  for (let i = 0; i < data.length; i++) {
+                    const row = data[i]
+                    const time = row.time
                     Object.entries(plot.tracebyfield).forEach(function ([field, trace]) {
                       if (time > trace.x[trace.x.length - 1]) {
                         trace.x.push(time)
@@ -478,9 +479,9 @@ $(document).ready(function () {
   setTimeout(checkNewData, 60000)
 
   function addGraph(graph, size = 'sm') {
-    var clone = $('#template>:first-child').clone()
-    var plot = clone.find('.myplot')[0]
-    var legend = clone.find('.mylegend')
+    const clone = $('#template>:first-child').clone()
+    const plot = clone.find('.myplot')[0]
+    const legend = clone.find('.mylegend')
     plot.graph = graph
     // update graph title
     clone.find('.graphtitle').text(graph.host + ' / ')
@@ -540,10 +541,10 @@ $(document).ready(function () {
   // update the select widget to be able to list the known graphs
   function updateSelect(graphs) {
     // make lists of groups, hosts and categories
-    var hosts = {}
-    var categories = []
-    for (var graph in graphs) {
-      var parts = graph.split('/')
+    const hosts = {}
+    const categories = []
+    for (const graph in graphs) {
+      const parts = graph.split('/')
       if (!hosts[parts[0]]) {
         hosts[parts[0]] = []
       }
@@ -556,7 +557,7 @@ $(document).ready(function () {
     }
     // update options in host selector
     Object.keys(hosts).sort().forEach(function (group) {
-      var groupElement = $('<optgroup></optgroup>').attr('label', group)
+      const groupElement = $('<optgroup></optgroup>').attr('label', group)
       hosts[group].sort().forEach(function (host) {
         groupElement.append($('<option></option>').attr('value', group + '/' + host).text(host))
       })
@@ -568,9 +569,9 @@ $(document).ready(function () {
     })
     // handler for updating the choices in the graph select
     function updateGraphList() {
-      var search = $('#graphfilter').val().toLowerCase().split(' ')
-      var hostFilter = $('#hostselect').val()
-      var categoryFilter = $('#categoryselect').val()
+      const search = $('#graphfilter').val().toLowerCase().split(' ')
+      const hostFilter = $('#hostselect').val()
+      const categoryFilter = $('#categoryselect').val()
       $('#graphselect').empty()
       Object.keys(graphs).sort().forEach(function (graph) {
         if (hostFilter && !graph.startsWith(hostFilter + '/')) {
@@ -579,12 +580,12 @@ $(document).ready(function () {
         if (categoryFilter && graphs[graph].category !== categoryFilter) {
           return
         }
-        var descripton = (graph + ' ' + graphs[graph].graph_title + ' ' + graphs[graph].category).toLowerCase()
+        const descripton = (graph + ' ' + graphs[graph].graph_title + ' ' + graphs[graph].category).toLowerCase()
         if (search.some(x => !descripton.includes(x))) {
           return
         }
-        var title = graphs[graph].graph_title || graph.split('/')[2]
-        var graphelement = $('<a href="#" class="list-group-item list-group-item-action" data-toggle="collapse" data-target="#addgraph"></a>').text(title)
+        const title = graphs[graph].graph_title || graph.split('/')[2]
+        const graphelement = $('<a href="#" class="list-group-item list-group-item-action" data-toggle="collapse" data-target="#addgraph"></a>').text(title)
         // add the host graph unless a host graph has been selected
         if (!hostFilter) {
           graphelement.prepend($('<small></small>').text(graph.split('/')[1] + ' / '))
@@ -629,6 +630,7 @@ $(document).ready(function () {
           })
         }
       }
+      return undefined
     }).toArray()
   }
 
@@ -653,7 +655,7 @@ $(document).ready(function () {
     clearGraphs()
     graphs.forEach(function (graph) {
       // lookup the graph by name
-      var plot = addGraph(document.graph_data[graph.name], graph.size || 'sm')
+      const plot = addGraph(document.graph_data[graph.name], graph.size || 'sm')
       // hide fields
       if (graph.hidden && graph.hidden.length) {
         graph.hidden.forEach(function (field) {
@@ -684,10 +686,10 @@ $(document).ready(function () {
       $('#dashboards').remove()
     } else {
       Object.keys(dashboards).sort().forEach(function (name) {
-        var option = $('<button class="dropdown-item" type="button">').text(name)
+        const option = $('<button class="dropdown-item" type="button">').text(name)
         $('#dashboards .dropdown-menu').append(option)
         option.click(function () {
-          var dashboard = dashboards[name]
+          const dashboard = dashboards[name]
           setGraphs(dashboard.graphs)
           if (dashboard.dateRange) {
             setDateRange(dashboard.dateRange.start, dashboard.dateRange.end)
@@ -727,16 +729,16 @@ $(document).ready(function () {
 
   // output readable but compact JSON
   function getSaveDashboardData() {
-    var value = '{\n'
-    var name = $('#saveDashboardName').val()
+    let value = '{\n'
+    const name = $('#saveDashboardName').val()
     if (name) {
       value += '  "name": ' + JSON.stringify(name) + ',\n'
     }
     if ($('#saveDashboardDateRange:checked').length) {
-      var dateRange = JSON.parse(localStorage.getItem('dateRange'))
+      const dateRange = JSON.parse(localStorage.getItem('dateRange'))
       value += '  "dateRange": ' + JSON.stringify(dateRange) + ',\n'
     }
-    var graphs = JSON.parse(localStorage.getItem('shownGraphs'))
+    const graphs = JSON.parse(localStorage.getItem('shownGraphs'))
     value += '  "graphs": ' + JSON.stringify(graphs) + '\n}'
     return value
   }
@@ -744,7 +746,7 @@ $(document).ready(function () {
   // save dialog copy data to clipboard
   $('#saveDashboardClipboard').on('click', function (event) {
     // create a temporary text area
-    var textarea = document.createElement('textarea')
+    const textarea = document.createElement('textarea')
     $(textarea).css({
       position: 'absolute',
       left: '-1000px',
@@ -768,7 +770,7 @@ $(document).ready(function () {
 
   // save dashboard definition to file
   $('#saveDashboardFile').on('click', function (event) {
-    var element = document.createElement('a')
+    const element = document.createElement('a')
     element.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent(getSaveDashboardData() + '\n'))
     element.setAttribute('download', 'dashboard.json')
     element.style.display = 'none'
@@ -792,7 +794,7 @@ $(document).ready(function () {
     $('#loadDashboardFile').click()
   })
   $('#loadDashboardFile').on('change', function (event) {
-    var reader = new FileReader()
+    const reader = new FileReader()
     reader.onload = function (e) {
       $('#loadDashboardData').val(e.target.result)
     }
@@ -803,7 +805,7 @@ $(document).ready(function () {
   // load dashboard
   $('#loadDashboardGo').on('click', function (event) {
     try {
-      var dashboard = JSON.parse($('#loadDashboardData').val())
+      const dashboard = JSON.parse($('#loadDashboardData').val())
       if (dashboard) {
         setGraphs(dashboard.graphs)
         if (dashboard.dateRange) {

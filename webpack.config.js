@@ -8,7 +8,8 @@ module.exports = (env, options) => {
     entry: './src/munin-plot.js',
     output: {
       filename: 'munin-plot.[contenthash].js',
-      path: path.resolve(__dirname, 'muninplot/static')
+      path: path.resolve(__dirname, 'muninplot/static'),
+      publicPath: ''
     },
     optimization: {
       minimize: options.mode === 'production'
