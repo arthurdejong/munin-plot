@@ -139,7 +139,7 @@ def _fetch_rrd(filename, start, end, resolution=300, cf='AVERAGE'):
 
 def get_raw_values(group, host, graph, start, end, resolution=300, minmax=True):
     """Get the data points available from the specified graph."""
-    start = int(start / resolution) * resolution
+    start = int(start / resolution - 1.1) * resolution
     end = int(end / resolution) * resolution
     data = defaultdict(defaultdict)
     for f in _get_rrd_files(group, host, graph):
