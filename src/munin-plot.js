@@ -403,7 +403,7 @@ $(document).ready(function () {
           if (plot.layout) {
             // range of the x axis
             const [amin, amax] = plot.layout.xaxis.range
-            const url = 'data/' + plot.graph.name + '?start=' + amin.substring(0, 16) + '&end=' + amax.substring(0, 16)
+            const url = 'data/' + plot.graph.name + '?start=' + amin.substring(0, 16).replace(' ', 'T') + '&end=' + amax.substring(0, 16).replace(' ', 'T')
             Plotly.d3.csv(url, function (data) {
               Object.keys(plot.tracebyfield).forEach(function (field) {
                 plot.tracebyfield[field].x = []

@@ -102,7 +102,9 @@ def _parse_timestamp(timestamp):
     """Return a timestamp value from the specified string."""
     formats = (
         '%Y-%m-%d %H:%M:%S',
+        '%Y-%m-%dT%H:%M:%S',
         '%Y-%m-%d %H:%M',
+        '%Y-%m-%dT%H:%M',
         '%Y-%m-%d')
     for fmt in formats:
         try:
