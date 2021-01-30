@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2020 Arthur de Jong
+# Copyright (C) 2018-2021 Arthur de Jong
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -187,6 +187,7 @@ def get_values(group, host, graph, start, end, resolution=300, minmax=True):
     graph_info = get_info()['%s/%s/%s' % (group, host, graph)]
     data = get_raw_values(group, host, graph, start, end, resolution, minmax)
     for field_info in graph_info['fields']:
+        # negative is a new field that is the negative of another field
         negative = field_info.get('negative')
         if negative:
             for row in data:

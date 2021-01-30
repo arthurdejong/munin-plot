@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2020 Arthur de Jong
+# Copyright (C) 2018-2021 Arthur de Jong
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -127,15 +127,15 @@ def get_data(environ, start_response):
     resolution = min((
         parameters.get('resolution', (end - start) / 5000),
         resolutions[-1][0]))
-    # loop over resolutions to find the data
-    values = []
+    # find the resolution that contains the whole data set
     for res, rows in resolutions:
         if res >= resolution:
             s = max((last_update - res * rows, start))
             e = min((last_update, end))
             if e > s:
-                values = get_values(group, host, graph, s, e, res) + values
-                end = s
+                resolution = res
+                break
+    values = get_values(group, host, graph, start, end, resolution)
     # return the values as CSV
     start_response('200 OK', [
         ('Content-Type', 'text/csv')])
