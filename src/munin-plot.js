@@ -1,5 +1,5 @@
 /*!
-  Copyright (C) 2018-2020 Arthur de Jong
+  Copyright (C) 2018-2021 Arthur de Jong
 
   Permission is hereby granted, free of charge, to any person obtaining a
   copy of this software and associated documentation files (the "Software"),
@@ -403,62 +403,21 @@ $(document).ready(function () {
           if (plot.layout) {
             // range of the x axis
             const [amin, amax] = plot.layout.xaxis.range
-            // range of the currently loaded data
-            const dmin = plot.data.map(t => t.x[0]).reduce((a, c) => a < c ? a : c)
-            const dmax = plot.data.map(t => t.x[t.x.length - 1]).reduce((a, c) => a > c ? a : c)
-            // range that we have marked as loaded
-            // (to avoid retrying to load data that isn't there)
-            if (!plot.lmin) {
-              plot.lmin = dmin
-            }
-            if (!plot.lmax) {
-              plot.lmax = dmax
-            }
-            // see if we need to load data before the currently loaded range
-            if (amin < plot.lmin) {
-              plot.lmin = amin
-              const url = 'data/' + plot.graph.name + '?start=' + amin.substring(0, 16) + '&end=' + dmin.substring(0, 16)
-              Plotly.d3.csv(url, function (data) {
-                // prepend new data
-                if (data) {
-                  for (let i = data.length - 1; i >= 0; i--) {
-                    const row = data[i]
-                    const time = row.time
-                    Object.entries(plot.tracebyfield).forEach(function ([field, trace]) {
-                      if (time < trace.x[0]) {
-                        trace.x.splice(0, 0, time)
-                        trace.y.splice(0, 0, Number(row[field]))
-                      }
-                    })
-                  }
-                  plot.layout.datarevision += 1
-                  Plotly.react(plot, plot.data, plot.layout)
-                }
+            const url = 'data/' + plot.graph.name + '?start=' + amin.substring(0, 16) + '&end=' + amax.substring(0, 16)
+            Plotly.d3.csv(url, function (data) {
+              Object.keys(plot.tracebyfield).forEach(function (field) {
+                plot.tracebyfield[field].x = []
+                plot.tracebyfield[field].y = []
               })
-            }
-            // see if we need to load data past the currently loaded range
-            if (amax > plot.lmax) {
-              plot.lmax = amax
-              // load data from dmax to amax and append
-              const url = 'data/' + plot.graph.name + '?start=' + dmax.substring(0, 16) + '&end=' + amax.substring(0, 16)
-              Plotly.d3.csv(url, function (data) {
-                // append new data
-                if (data) {
-                  for (let i = 0; i < data.length; i++) {
-                    const row = data[i]
-                    const time = row.time
-                    Object.entries(plot.tracebyfield).forEach(function ([field, trace]) {
-                      if (time > trace.x[trace.x.length - 1]) {
-                        trace.x.push(time)
-                        trace.y.push(Number(row[field]))
-                      }
-                    })
-                  }
-                  plot.layout.datarevision += 1
-                  Plotly.react(plot, plot.data, plot.layout)
-                }
+              data.forEach(function (row) {
+                Object.keys(plot.tracebyfield).forEach(function (field) {
+                  plot.tracebyfield[field].x.push(row.time)
+                  plot.tracebyfield[field].y.push(Number(row[field]))
+                })
               })
-            }
+              plot.layout.datarevision += 1
+              Plotly.react(plot, plot.data, plot.layout)
+            })
           }
         })
       }
@@ -471,10 +430,13 @@ $(document).ready(function () {
   // every minute check if there is any new data
   function checkNewData() {
     setTimeout(checkNewData, 60000)
-    $('.myplot').each(function () {
-      this.lmax = undefined
+    $('.myplot').each(function (index, plot) {
+      // if any plot has incomplete data, reload the data
+      if (plot.layout) {
+        const dmax = plot.data.map(t => t.x[t.x.length - 1]).reduce((a, c) => a > c ? a : c)
+        if (dmax < plot.layout.xaxis.range[1]) { updatedata = true }
+      }
     })
-    updatedata = true
   }
   setTimeout(checkNewData, 60000)
 
