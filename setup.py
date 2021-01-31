@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright (C) 2019-2020 Arthur de Jong
+# Copyright (C) 2019-2021 Arthur de Jong
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
