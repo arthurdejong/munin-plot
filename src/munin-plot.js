@@ -335,33 +335,31 @@ $(document).ready(function () {
             Plotly.redraw(plot)
           }
         })
-        // highlight the trace by lowering the opacity of the others
+        // highlight the trace by lowering the opacity of the others traces
         legendrow.mouseover(function () {
           if (plot.data) {
-            let vals = plot.data.map(t => t.field_name === trace.field_name ? 1 : 0.1)
-            Plotly.restyle(plot, 'opacity', vals)
-            vals = plot.data.map(function (t) {
+            Plotly.restyle(plot, 'opacity', plot.data.map(
+              t => t.field_name === trace.field_name ? 1 : 0.1))
+            Plotly.restyle(plot, 'fillcolor', plot.data.map(function (t) {
               if (t.showlegend === false) {
-                return t.fillcolor
+                return (t.fillcolor || '#ffffff').substring(0, 7) + (t.field_name === trace.field_name ? '25' : '05')
               }
               return (t.fillcolor || '#ffffff').substring(0, 7) + (t.field_name === trace.field_name ? 'ff' : '30')
-            })
-            Plotly.restyle(plot, 'fillcolor', vals)
+            }))
           }
         })
       }
     })
-    // reset opacity after exiting the legend
+    // restore opacity after exiting the legend
     legend.mouseout(function () {
       if (plot.data) {
         Plotly.restyle(plot, 'opacity', plot.data.map(t => 1))
-        const vals = plot.data.map(function (t) {
+        Plotly.restyle(plot, 'fillcolor', plot.data.map(function (t) {
           if (t.showlegend === false) {
-            return t.fillcolor
+            return (t.fillcolor || '#ffffff').substring(0, 7) + '20'
           }
           return (t.fillcolor || '#ffffff').substring(0, 7) + 'c0'
-        })
-        Plotly.restyle(plot, 'fillcolor', vals)
+        }))
       }
     })
     // fetch the data and plot it
