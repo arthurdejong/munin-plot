@@ -219,8 +219,8 @@ def get_values(group, host, graph, start, end, resolution=300, minmax=True):
 
 
 def get_resolutions(group, host, graph):
-    """Return a list of resolutions available for the graph."""
-    # find the newest file
+    """Return a list of resolutions, begin, end available for the graph."""
+    # find the newest file (we assume all fields have the same resolution)
     rrdfile = sorted(
         (os.stat(x).st_mtime, x) for x in (
             os.path.join(MUNIN_DBDIR, group, y)
@@ -236,8 +236,11 @@ def get_resolutions(group, host, graph):
             last_update = int(line.split(' = ')[1])
             last_update = int(last_update / step) * step
         elif '.pdp_per_row = ' in line:
+            # number of steps per data point
             pdp_per_row = int(line.split(' = ')[1])
             resolutions[pdp_per_row * step] = line.split('.')[0]
         elif '.rows = ' in line:
             rows[line.split('.')[0]] = int(line.split(' = ')[1])
-    return last_update, [(r, rows[i]) for r, i in sorted(resolutions.items())]
+    return [
+        (resolution, last_update - resolution * rows[item], last_update)
+        for resolution, item in sorted(resolutions.items())]

@@ -108,7 +108,7 @@ def _parse_timestamp(timestamp):
         '%Y-%m-%d')
     for fmt in formats:
         try:
-            return time.mktime(time.strptime(timestamp, fmt))
+            return int(time.mktime(time.strptime(timestamp, fmt)))
         except ValueError:
             pass
     raise ValueError('time data %r does not match any known format' % timestamp)
@@ -118,29 +118,25 @@ def get_data(environ, start_response):
     """Return a data series for the graph as CSV."""
     path = environ.get('PATH_INFO', '').lstrip('/')
     _, group, host, graph = path.split('/')
-    last_update, resolutions = get_resolutions(group, host, graph)
+    resolutions = get_resolutions(group, host, graph)
     parameters = cgi.parse_qs(environ.get('QUERY_STRING', ''))
     # get the time range to fetch the data for
     end = parameters.get('end')
-    end = _parse_timestamp(end[0]) if end else last_update
+    end = _parse_timestamp(end[0]) if end else resolutions[0][-1]
     start = parameters.get('start')
     start = _parse_timestamp(start[0]) if start else end - 24 * 60 * 60 * 7
-    # calculate the minimum resolution that we want
-    resolution = min((
-        parameters.get('resolution', (end - start) / 5000),
-        resolutions[-1][0]))
-    # find the resolution that contains the whole data set
-    for res, rows in resolutions:
-        if res >= resolution:
-            s = max((last_update - res * rows, start))
-            e = min((last_update, end))
-            if e > s:
-                resolution = res
-                break
-    values = get_values(group, host, graph, start, end, resolution)
+    # calculate the resolution that we want
+    resolution = parameters.get('resolution', (end - start) / 5000)
+    # find the resolution with the start point in the range
+    resolution = min([
+        r_res
+        for r_res, r_start, r_end in resolutions
+        if r_res >= resolution and start >= r_start] +
+        [resolutions[-1][0]])
     # return the values as CSV
     start_response('200 OK', [
         ('Content-Type', 'text/csv')])
+    values = get_values(group, host, graph, start, end, resolution)
     if values:
         keys = (x for x in values[0].keys() if x != 'remove')
         keys = ['time'] + sorted((k for k in keys if k != 'time'), key=_field_key)
