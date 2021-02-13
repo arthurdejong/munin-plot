@@ -137,21 +137,22 @@ def _fetch_rrd(filename, start, end, resolution=300, cf='AVERAGE'):
                 pass
 
 
-def get_raw_values(group, host, graph, start, end, resolution=300, minmax=True):
+def get_raw_values(group, host, graph, fields, start, end, resolution=300, minmax=True):
     """Get the data points available from the specified graph."""
     start = int(start / resolution - 1.1) * resolution
     end = int(end / resolution) * resolution
     data = defaultdict(defaultdict)
     for f in _get_rrd_files(group, host, graph):
         field = '-'.join(f.split('-')[2:-1])
-        filename = os.path.join(group, f)
-        for time_, value in _fetch_rrd(filename, start, end, resolution, 'AVERAGE'):
-            data[time_][field] = value
-        if minmax:
-            for time_, value in _fetch_rrd(filename, start, end, resolution, 'MIN'):
-                data[time_][field + '.min'] = value
-            for time_, value in _fetch_rrd(filename, start, end, resolution, 'MAX'):
-                data[time_][field + '.max'] = value
+        if field in fields:
+            filename = os.path.join(group, f)
+            for time_, value in _fetch_rrd(filename, start, end, resolution, 'AVERAGE'):
+                data[time_][field] = value
+            if minmax:
+                for time_, value in _fetch_rrd(filename, start, end, resolution, 'MIN'):
+                    data[time_][field + '.min'] = value
+                for time_, value in _fetch_rrd(filename, start, end, resolution, 'MAX'):
+                    data[time_][field + '.max'] = value
     return [dict(time=k, **v) for k, v in sorted(data.items())]
 
 
@@ -185,8 +186,15 @@ def cdef_eval(expression, row, suffix=''):
 def get_values(group, host, graph, start, end, resolution=300, minmax=True):
     """Get the data points available from the specified graph."""
     graph_info = get_info()['%s/%s/%s' % (group, host, graph)]
-    data = get_raw_values(group, host, graph, start, end, resolution, minmax)
+    fields = [field_info['name'] for field_info in graph_info['fields']]
+    data = get_raw_values(group, host, graph, fields, start, end, resolution, minmax)
     for field_info in graph_info['fields']:
+        # ensure the field is present in first row
+        field = field_info['name']
+        data[0].setdefault(field, None)
+        if minmax:
+            data[0].setdefault(field + '.min', None)
+            data[0].setdefault(field + '.max', None)
         # negative is a new field that is the negative of another field
         negative = field_info.get('negative')
         if negative:
@@ -205,7 +213,6 @@ def get_values(group, host, graph, start, end, resolution=300, minmax=True):
                     pass
         cdef = field_info.get('cdef')
         if cdef:
-            field = field_info['name']
             for row in data:
                 try:
                     values = [
