@@ -27,7 +27,7 @@ import time
 
 import pkg_resources
 
-from muninplot.data import get_info, get_resolutions, get_values
+from muninplot.data import get_info, get_values
 
 
 # The directory that contains the JSON files that describe the dashboards
@@ -118,32 +118,19 @@ def get_data(environ, start_response):
     """Return a data series for the graph as CSV."""
     path = environ.get('PATH_INFO', '').lstrip('/')
     _, group, host, graph = path.split('/')
-    resolutions = get_resolutions(group, host, graph)
     parameters = cgi.parse_qs(environ.get('QUERY_STRING', ''))
     # get the time range to fetch the data for
     end = parameters.get('end')
-    end = _parse_timestamp(end[0]) if end else resolutions[0][-1]
+    end = _parse_timestamp(end[0]) if end else time.time()
     start = parameters.get('start')
     start = _parse_timestamp(start[0]) if start else end - 24 * 60 * 60 * 7
-    # calculate the resolution that we want
-    resolution = parameters.get('resolution', (end - start) / 5000)
-    # find the resolution with the start point in the range
-    resolution = min([
-        r_res
-        for r_res, r_start, r_end in resolutions
-        if r_res >= resolution and start >= r_start] +
-        [resolutions[-1][0]])
     # return the values as CSV
     start_response('200 OK', [
         ('Content-Type', 'text/csv')])
-    values = get_values(group, host, graph, start, end, resolution)
-    if values:
-        keys = (x for x in values[0].keys() if x != 'remove')
-        keys = ['time'] + sorted((k for k in keys if k != 'time'), key=_field_key)
-        yield ('%s\n' % (','.join(keys))).encode('utf-8')
-        for value in values:
-            value['time'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(value['time']))
-            yield ('%s\n' % (','.join(str(value.get(key, '')) for key in keys))).encode('utf-8')
+    for values in get_values(group, host, graph, start, end):
+        if not isinstance(values[0], str):
+            values[0] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(values[0]))
+        yield ('%s\n' % (','.join(str('' if value is None else value) for value in values))).encode('utf-8')
 
 
 def application(environ, start_response):

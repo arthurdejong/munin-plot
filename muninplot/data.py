@@ -20,7 +20,7 @@
 
 """Module that exposes the Munin data."""
 
-import math
+import json
 import os
 import re
 import subprocess
@@ -88,6 +88,7 @@ def get_info():
             if negative:
                 fields[negative].pop('graph', None)
                 fields[negative].setdefault('draw', field_info.get('draw', 'LINE'))
+                fields[negative].setdefault('is_negative', True)
         # remove graph = no and replace by removing draw
         for _field, field_info in fields.items():
             if field_info.pop('graph', '').lower() in ('false', 'no', '0'):
@@ -112,142 +113,64 @@ def get_info():
     return data
 
 
-def _get_rrd_files(group, host, graph):
-    """Return a list of RRD files that are available for the graph."""
-    files = os.listdir(os.path.join(MUNIN_DBDIR, group))
-    prefix = '%s-%s-' % (host, graph)
-    return sorted(
-        f for f in files
-        if f.startswith(prefix) and f.endswith('.rrd'))
+def _cdef_change(cdef, mod):
+    """Replace references in the cdef expression to include min and max."""
+    return ','.join(x + mod if re.match('^[a-z_]+$', x) else x for x in cdef.split(','))
 
 
-def _fetch_rrd(filename, start, end, resolution=300, cf='AVERAGE'):
-    """Use rrdtool to fetch values to the data."""
-    output = subprocess.check_output([
-        'rrdtool', 'fetch', os.path.join(MUNIN_DBDIR, filename),
-        cf, '-r', str(resolution), '-s', str(start), '-e', str(end)])
-    for line in output.decode('utf-8').splitlines():
-        if ':' in line:
-            try:
-                time, value = line.split(':', 1)
-                value = float(value)
-                if not math.isnan(value):
-                    yield int(time), value
-            except ValueError:
-                pass
+def _key(value):
+    """For sorting None values consistently."""
+    return 0 if value is None else value
 
 
-def get_raw_values(group, host, graph, fields, start, end, resolution=300, minmax=True):
-    """Get the data points available from the specified graph."""
-    start = int(start / resolution - 1.1) * resolution
-    end = int(end / resolution) * resolution
-    data = defaultdict(defaultdict)
-    for f in _get_rrd_files(group, host, graph):
-        field = '-'.join(f.split('-')[2:-1])
-        if field in fields:
-            filename = os.path.join(group, f)
-            for time_, value in _fetch_rrd(filename, start, end, resolution, 'AVERAGE'):
-                data[time_][field] = value
-            if minmax:
-                for time_, value in _fetch_rrd(filename, start, end, resolution, 'MIN'):
-                    data[time_][field + '.min'] = value
-                for time_, value in _fetch_rrd(filename, start, end, resolution, 'MAX'):
-                    data[time_][field + '.max'] = value
-    return [dict(time=k, **v) for k, v in sorted(data.items())]
-
-
-cdef_ops = {
-    '+': (lambda a, b: a + b),
-    '-': (lambda a, b: a - b),
-    '*': (lambda a, b: a * b),
-    '/': (lambda a, b: a / b),
-}
-
-cdef_number_re = re.compile(r'^-?[0-9]+(\.[0-9]*)?$')
-
-
-def cdef_eval(expression, row, suffix=''):
-    """Evaluate a cdef expression using variables from row."""
-    tokens = expression.split(',')
-    stack = []
-    for token in tokens:
-        if cdef_number_re.match(token):
-            stack.append(float(token))
-        elif token in cdef_ops:
-            arg2 = stack.pop()
-            arg1 = stack.pop()
-            result = cdef_ops[token](arg1, arg2)
-            stack.append(result)
-        else:
-            stack.append(row[token + suffix])
-    return stack.pop()
-
-
-def get_values(group, host, graph, start, end, resolution=300, minmax=True):
+def get_values(group, host, graph, start, end):
     """Get the data points available from the specified graph."""
     graph_info = get_info()['%s/%s/%s' % (group, host, graph)]
-    fields = [field_info['name'] for field_info in graph_info['fields']]
-    data = get_raw_values(group, host, graph, fields, start, end, resolution, minmax)
+    columns = ['time']
+    # build command line
+    cmd = [
+        'rrdtool', 'xport', '-s', str(int(start)), '-e', str(int(end)), '--json']
+    # add fields to command line
     for field_info in graph_info['fields']:
-        # ensure the field is present in first row
         field = field_info['name']
-        data[0].setdefault(field, None)
-        if minmax:
-            data[0].setdefault(field + '.min', None)
-            data[0].setdefault(field + '.max', None)
-        # negative is a new field that is the negative of another field
-        negative = field_info.get('negative')
-        if negative:
-            for row in data:
-                try:
-                    values = [
-                        -row[negative + '.min'],
-                        -row[negative],
-                        -row[negative + '.max']]
-                    (
-                        row[negative + '.min'],
-                        row[negative],
-                        row[negative + '.max'],
-                    ) = sorted(values)
-                except KeyError:
-                    pass
+        columns += [field + '.min', field, field + '.max']
+        # fetch the values from the RRD file
+        rrdfile = os.path.join(
+            MUNIN_DBDIR, group,
+            '%s-%s-%s-%s.rrd' % (host, graph, field, field_info.get('type', 'g')[0].lower()))
+        cmd += [
+            'DEF:%s_min=%s:42:MIN' % (field, rrdfile),
+            'DEF:%s_avg=%s:42:AVERAGE' % (field, rrdfile),
+            'DEF:%s_max=%s:42:MAX' % (field, rrdfile)]
+        # translate the field values with CDEF expressions if defined
         cdef = field_info.get('cdef')
         if cdef:
-            for row in data:
-                try:
-                    values = [
-                        cdef_eval(cdef, row, '.min'),
-                        cdef_eval(cdef, row),
-                        cdef_eval(cdef, row, '.max')]
-                    row[field + '.min'], row[field], row[field + '.max'] = sorted(values)
-                except Exception:
-                    pass
-    return data
-
-
-def get_resolutions(group, host, graph):
-    """Return a list of resolutions, begin, end available for the graph."""
-    # find the newest file (we assume all fields have the same resolution)
-    rrdfile = sorted(
-        (os.stat(x).st_mtime, x) for x in (
-            os.path.join(MUNIN_DBDIR, group, y)
-            for y in _get_rrd_files(group, host, graph)))[-1][1]
-    output = subprocess.check_output(['rrdtool', 'info', rrdfile])
-    resolutions = {}
-    rows = {}
-    for line in output.decode('utf-8').splitlines():
-        if line.startswith('step = '):
-            # the measurement resolution
-            step = int(line.split(' = ')[1])
-        elif line.startswith('last_update = '):
-            last_update = int(line.split(' = ')[1])
-            last_update = int(last_update / step) * step
-        elif '.pdp_per_row = ' in line:
-            # number of steps per data point
-            pdp_per_row = int(line.split(' = ')[1])
-            resolutions[pdp_per_row * step] = line.split('.')[0]
-        elif '.rows = ' in line:
-            rows[line.split('.')[0]] = int(line.split(' = ')[1])
-    return [
-        (resolution, last_update - resolution * rows[item], last_update)
-        for resolution, item in sorted(resolutions.items())]
+            cmd += [
+                'CDEF:%s_cdef_min=%s' % (field, _cdef_change(cdef, '_min')),
+                'CDEF:%s_cdef_avg=%s' % (field, _cdef_change(cdef, '_avg')),
+                'CDEF:%s_cdef_max=%s' % (field, _cdef_change(cdef, '_max'))]
+            field = field + '_cdef'
+        # negative is a new field that is the negative of another field
+        # for negative we transform the field referenced by negative
+        if field_info.get('is_negative'):
+            cmd += [
+                'CDEF:%s_neg_min=%s_max,-1,*' % (field, field),
+                'CDEF:%s_neg_avg=%s_avg,-1,*' % (field, field),
+                'CDEF:%s_neg_max=%s_min,-1,*' % (field, field)]
+            field = field + '_neg'
+        # output the resulting fields
+        cmd += [
+            'XPORT:%s_min' % field,
+            'XPORT:%s_avg' % field,
+            'XPORT:%s_max' % field]
+    # run the command
+    data = json.loads(subprocess.check_output(cmd))
+    timestamp = data['meta']['start']
+    step = data['meta']['step']
+    yield columns
+    for values in data['data']:
+        # re-order the values in groups of 3 to have min, average and max correct
+        yield [timestamp] + sum(
+            (sorted(values[i:i + 3], key=_key) for i in range(0, len(values), 3)),
+            [])
+        timestamp += step
