@@ -189,9 +189,9 @@ $(document).ready(function () {
     Object.keys(plot.legendbyfield).forEach(function (field) {
       // calculate minimum
       const mintrace = plot.tracebyfield[field + '.min']
-      const minvalue = Math.min.apply(null, mintrace.y.filter(function (el, idx) {
+      const minvalue = Math.min.apply(null, mintrace.y.filter(function (y, idx) {
         const x = mintrace.x[idx]
-        return x >= minx && x <= maxx
+        return x >= minx && x <= maxx && y !== null
       }))
       // calculate average
       const avgtrace = plot.tracebyfield[field]
@@ -213,9 +213,9 @@ $(document).ready(function () {
       }
       // calculate maximum
       const maxtrace = plot.tracebyfield[field + '.max']
-      const maxvalue = Math.max.apply(null, maxtrace.y.filter(function (el, idx) {
+      const maxvalue = Math.max.apply(null, maxtrace.y.filter(function (y, idx) {
         const x = maxtrace.x[idx]
-        return x >= minx && x <= maxx
+        return x >= minx && x <= maxx && y !== null
       }))
       // update legend
       const columns = $(plot.legendbyfield[field]).find('td')
@@ -278,13 +278,15 @@ $(document).ready(function () {
           field_name: field.name,
           showlegend: false,
           hoverinfo: 'skip',
-          line: {width: 0}
+          line: {width: 0},
+          connectgaps: true
         }
         const maxTrace = {
           field_name: field.name,
           showlegend: false,
           hoverinfo: 'skip',
           line: {width: 0},
+          connectgaps: true,
           fill: 'tonexty',
           fillcolor: color + '20'
         }
@@ -410,7 +412,7 @@ $(document).ready(function () {
               data.forEach(function (row) {
                 Object.keys(plot.tracebyfield).forEach(function (field) {
                   plot.tracebyfield[field].x.push(row.time)
-                  plot.tracebyfield[field].y.push(Number(row[field]))
+                  plot.tracebyfield[field].y.push(row[field] ? Number(row[field]) : null)
                 })
               })
               plot.layout.datarevision += 1
