@@ -427,14 +427,13 @@ $(document).ready(function () {
   }
   setTimeout(checkDataUpdates, 1000)
 
-  // every minute check if there is any new data
+  // every minute check if we should load new data
   function checkNewData() {
     setTimeout(checkNewData, 60000)
     $('.myplot').each(function (index, plot) {
       // if any plot has incomplete data, reload the data
       if (plot.layout) {
-        const dmax = plot.data.map(t => t.x[t.x.length - 1]).reduce((a, c) => a > c ? a : c)
-        if (dmax < plot.layout.xaxis.range[1]) { updatedata = true }
+        if (moment().format('YYYY-MM-DD HH:mm') < plot.layout.xaxis.range[1]) { updatedata = true }
       }
     })
   }
