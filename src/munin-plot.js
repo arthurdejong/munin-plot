@@ -226,13 +226,138 @@ $(document).ready(function () {
   }
 
   // load graph data into the plot
-  function loadGraph(plot, legend, graph) {
+  function loadGraph(plot, traces, layout) {
+    // range of the x axis
+    let url = 'data/' + plot.graph.name
+    if (plot.layout) {
+      const [amin, amax] = plot.layout.xaxis.range
+      url += '?start=' + amin.substring(0, 16).replace(' ', 'T') + '&end=' + amax.substring(0, 16).replace(' ', 'T')
+    }
+    Plotly.d3.csv(url, function (data) {
+      // clear traces
+      Object.keys(plot.tracebyfield).forEach(function (field) {
+        plot.tracebyfield[field].x = []
+        plot.tracebyfield[field].y = []
+      })
+      // load new data
+      data.forEach(function (row) {
+        Object.keys(plot.tracebyfield).forEach(function (field) {
+          plot.tracebyfield[field].x.push(row.time)
+          plot.tracebyfield[field].y.push(row[field] ? Number(row[field]) : null)
+        })
+      })
+      if (traces) {
+        // initial plot creation
+        plot.innerHTML = ''
+        Plotly.react(plot, traces, layout, config)
+        updateLegend(plot)
+        updatedata = true
+        // handle plot zoom changes
+        plot.on('plotly_relayout', function (data) {
+          if (data['xaxis.range[0]'] && data['xaxis.range[1]']) {
+            updatedata = true
+            setDateRange(data['xaxis.range[0]'], data['xaxis.range[1]'])
+            // update the legend values
+            updateLegend(plot)
+          }
+        })
+        // after any changes, save the current list of graphs
+        saveCurrentGraphs()
+      } else {
+        plot.layout.datarevision += 1
+        Plotly.react(plot, plot.data, plot.layout)
+      }
+    })
+  }
+
+  // check if the axis match the data range and load more data as needed
+  function checkDataUpdates() {
+    try {
+      if (updatedata) {
+        updatedata = false
+        // go over all plots
+        $('.myplot').each(function () {
+          const plot = this
+          if (plot.layout) {
+            loadGraph(plot)
+          }
+        })
+      }
+    } finally {
+      setTimeout(checkDataUpdates, 1000)
+    }
+  }
+  setTimeout(checkDataUpdates, 1000)
+
+  // every minute check if we should load new data
+  function checkNewData() {
+    setTimeout(checkNewData, 60000)
+    $('.myplot').each(function (index, plot) {
+      // if any plot has incomplete data, reload the data
+      if (plot.layout) {
+        if (moment().format('YYYY-MM-DD HH:mm') < plot.layout.xaxis.range[1]) { updatedata = true }
+      }
+    })
+  }
+  setTimeout(checkNewData, 60000)
+
+  function addGraph(graph, size = 'sm') {
+    const clone = $('#template>:first-child').clone()
+    const plot = clone.find('.myplot')[0]
+    const legend = clone.find('.mylegend')
+    plot.graph = graph
+    // update graph title
+    clone.find('.graphtitle').text(graph.host + ' / ')
+      .append($('<b>').text(graph.graph_title))
+      .tooltip({title: graph.graph_info || ''})
+    // tooltip for drag handle
+    clone.find('.draghandle').tooltip({placement: 'right'})
+    // set the size changing actions
+    clone.find('.sizesm').tooltip({placement: 'right'}).click(function () {
+      clone.find('.sizeactive').removeClass('sizeactive')
+      $(this).addClass('sizeactive')
+      $(plot).addClass('plot-sm').removeClass('plot-md plot-lg')
+      legend.addClass('legend-sm').removeClass('legend-md legend-lg')
+      Plotly.relayout(plot, {})
+      saveCurrentGraphs()
+    })
+    clone.find('.sizemd').tooltip({placement: 'right'}).click(function () {
+      clone.find('.sizeactive').removeClass('sizeactive')
+      $(this).addClass('sizeactive')
+      $(plot).addClass('plot-md').removeClass('plot-sm plot-lg')
+      legend.addClass('legend-md').removeClass('legend-sm legend-lg')
+      Plotly.relayout(plot, {})
+      saveCurrentGraphs()
+    })
+    clone.find('.sizelg').tooltip({placement: 'right'}).click(function () {
+      clone.find('.sizeactive').removeClass('sizeactive')
+      $(this).addClass('sizeactive')
+      $(plot).addClass('plot-lg').removeClass('plot-sm plot-md')
+      legend.addClass('legend-lg').removeClass('legend-sm legend-md')
+      Plotly.relayout(plot, {})
+      saveCurrentGraphs()
+    })
+    // configure the close button
+    clone.find('.closegraph').tooltip({placement: 'right'}).click(function () {
+      $(this).tooltip('dispose')
+      clone.hide(400, function () {
+        Plotly.purge(plot)
+        $(this).remove()
+        // after any changes, save the current list of graphs
+        saveCurrentGraphs()
+      })
+    })
+    // set the wanted size
+    $(plot).addClass('plot-' + size)
+    legend.addClass('legend-' + size)
+    clone.find('.sizeactive').removeClass('sizeactive')
+    clone.find('.size' + size).addClass('sizeactive')
     // prepare the graph configuration
     const layout = JSON.parse(JSON.stringify(baseLayout))
-    if (graph.graph_vlabel) {
-      layout.yaxis.title = graph.graph_vlabel
+    if (plot.graph.graph_vlabel) {
+      layout.yaxis.title = plot.graph.graph_vlabel
     }
-    if (graph.graph_args && graph.graph_args.match(/--logarithmic/)) {
+    if (plot.graph.graph_args && plot.graph.graph_args.match(/--logarithmic/)) {
       layout.yaxis.type = 'log'
       layout.yaxis.exponentformat = 'E'
     }
@@ -246,11 +371,11 @@ $(document).ready(function () {
     const tracebyfield = {}
     plot.tracebyfield = tracebyfield
     let stackgroup = 0
-    for (let i = 0; i < graph.fields.length; i++) {
-      const field = graph.fields[i]
+    for (let i = 0; i < plot.graph.fields.length; i++) {
+      const field = plot.graph.fields[i]
       const color = field.colour ? '#' + field.colour : defaultColors[i % defaultColors.length]
       if (field.draw === 'AREA' || field.draw === 'STACK' || field.draw === 'AREASTACK') {
-        if (!field.draw.match(/STACK/) && (!graph.fields[i + 1] || graph.fields[i + 1].draw.match(/STACK/))) {
+        if (!field.draw.match(/STACK/) && (!plot.graph.fields[i + 1] || plot.graph.fields[i + 1].draw.match(/STACK/))) {
           stackgroup += 1
         }
         const trace = {
@@ -365,133 +490,7 @@ $(document).ready(function () {
       }
     })
     // fetch the data and plot it
-    // TODO: probably skip this initial load???
-    Plotly.d3.csv('data/' + graph.name, function (data) {
-      for (let i = 0; i < data.length; i++) {
-        const row = data[i]
-        Object.keys(tracebyfield).forEach(function (field) {
-          tracebyfield[field].x.push(row.time)
-          tracebyfield[field].y.push(Number(row[field]))
-        })
-      }
-      plot.innerHTML = ''
-      Plotly.react(plot, traces, layout, config)
-      updateLegend(plot)
-      updatedata = true
-      // handle plot zoom changes
-      plot.on('plotly_relayout', function (data) {
-        if (data['xaxis.range[0]'] && data['xaxis.range[1]']) {
-          updatedata = true
-          setDateRange(data['xaxis.range[0]'], data['xaxis.range[1]'])
-          // update the legend values
-          updateLegend(plot)
-        }
-      })
-      // after any changes, save the current list of graphs
-      saveCurrentGraphs()
-    })
-  }
-
-  // check if the axis match the data range and load more data as needed
-  function checkDataUpdates() {
-    try {
-      if (updatedata) {
-        updatedata = false
-        // go over all plots
-        $('.myplot').each(function () {
-          const plot = this
-          if (plot.layout) {
-            // range of the x axis
-            const [amin, amax] = plot.layout.xaxis.range
-            const url = 'data/' + plot.graph.name + '?start=' + amin.substring(0, 16).replace(' ', 'T') + '&end=' + amax.substring(0, 16).replace(' ', 'T')
-            Plotly.d3.csv(url, function (data) {
-              Object.keys(plot.tracebyfield).forEach(function (field) {
-                plot.tracebyfield[field].x = []
-                plot.tracebyfield[field].y = []
-              })
-              data.forEach(function (row) {
-                Object.keys(plot.tracebyfield).forEach(function (field) {
-                  plot.tracebyfield[field].x.push(row.time)
-                  plot.tracebyfield[field].y.push(row[field] ? Number(row[field]) : null)
-                })
-              })
-              plot.layout.datarevision += 1
-              Plotly.react(plot, plot.data, plot.layout)
-            })
-          }
-        })
-      }
-    } finally {
-      setTimeout(checkDataUpdates, 1000)
-    }
-  }
-  setTimeout(checkDataUpdates, 1000)
-
-  // every minute check if we should load new data
-  function checkNewData() {
-    setTimeout(checkNewData, 60000)
-    $('.myplot').each(function (index, plot) {
-      // if any plot has incomplete data, reload the data
-      if (plot.layout) {
-        if (moment().format('YYYY-MM-DD HH:mm') < plot.layout.xaxis.range[1]) { updatedata = true }
-      }
-    })
-  }
-  setTimeout(checkNewData, 60000)
-
-  function addGraph(graph, size = 'sm') {
-    const clone = $('#template>:first-child').clone()
-    const plot = clone.find('.myplot')[0]
-    const legend = clone.find('.mylegend')
-    plot.graph = graph
-    // update graph title
-    clone.find('.graphtitle').text(graph.host + ' / ')
-      .append($('<b>').text(graph.graph_title))
-      .tooltip({title: graph.graph_info || ''})
-    // tooltip for drag handle
-    clone.find('.draghandle').tooltip({placement: 'right'})
-    // set the size changing actions
-    clone.find('.sizesm').tooltip({placement: 'right'}).click(function () {
-      clone.find('.sizeactive').removeClass('sizeactive')
-      $(this).addClass('sizeactive')
-      $(plot).addClass('plot-sm').removeClass('plot-md plot-lg')
-      legend.addClass('legend-sm').removeClass('legend-md legend-lg')
-      Plotly.relayout(plot, {})
-      saveCurrentGraphs()
-    })
-    clone.find('.sizemd').tooltip({placement: 'right'}).click(function () {
-      clone.find('.sizeactive').removeClass('sizeactive')
-      $(this).addClass('sizeactive')
-      $(plot).addClass('plot-md').removeClass('plot-sm plot-lg')
-      legend.addClass('legend-md').removeClass('legend-sm legend-lg')
-      Plotly.relayout(plot, {})
-      saveCurrentGraphs()
-    })
-    clone.find('.sizelg').tooltip({placement: 'right'}).click(function () {
-      clone.find('.sizeactive').removeClass('sizeactive')
-      $(this).addClass('sizeactive')
-      $(plot).addClass('plot-lg').removeClass('plot-sm plot-md')
-      legend.addClass('legend-lg').removeClass('legend-sm legend-md')
-      Plotly.relayout(plot, {})
-      saveCurrentGraphs()
-    })
-    // configure the close button
-    clone.find('.closegraph').tooltip({placement: 'right'}).click(function () {
-      $(this).tooltip('dispose')
-      clone.hide(400, function () {
-        Plotly.purge(plot)
-        $(this).remove()
-        // after any changes, save the current list of graphs
-        saveCurrentGraphs()
-      })
-    })
-    // set the wanted size
-    $(plot).addClass('plot-' + size)
-    legend.addClass('legend-' + size)
-    clone.find('.sizeactive').removeClass('sizeactive')
-    clone.find('.size' + size).addClass('sizeactive')
-    // load the graph data
-    loadGraph(plot, legend, graph)
+    loadGraph(plot, traces, layout)
     // enable tooltips on legend
     clone.find('.mylegend *[title]').tooltip({placement: 'bottom', container: 'body'})
     // show the graph
