@@ -1,0 +1,35 @@
+---
+
+name: Test
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '9 0 * * 1'
+
+jobs:
+  flake8:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip tox
+      - name: Run tox
+        run: tox -e flake8 --skip-missing-interpreters false
+  eslint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip tox
+      - name: Run tox
+        run: tox -e eslint --skip-missing-interpreters false
