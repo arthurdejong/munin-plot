@@ -242,9 +242,19 @@ $(document).ready(function () {
       // load new data
       data.forEach(function (row) {
         Object.keys(plot.tracebyfield).forEach(function (field) {
-          plot.tracebyfield[field].x.push(row.time)
-          plot.tracebyfield[field].y.push(row[field] ? Number(row[field]) : null)
+          const value = row[field] ? Number(row[field]) : null
+          if (row[field] || plot.tracebyfield[field].y.length > 0) {
+            plot.tracebyfield[field].x.push(row.time)
+            plot.tracebyfield[field].y.push(value)
+          }
         })
+      })
+      // remove trailing nulls from traces
+      Object.keys(plot.tracebyfield).forEach(function (field) {
+        while (plot.tracebyfield[field].y[plot.tracebyfield[field].y.length - 1] === null) {
+          plot.tracebyfield[field].x.pop()
+          plot.tracebyfield[field].y.pop()
+        }
       })
       if (traces) {
         // initial plot creation
