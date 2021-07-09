@@ -115,7 +115,7 @@ def get_info():
 
 def _cdef_change(cdef, mod):
     """Replace references in the cdef expression to include min and max."""
-    return ','.join(x + mod if re.match('^[a-z_]+$', x) else x for x in cdef.split(','))
+    return ','.join(x + mod if re.match('^[a-z_][a-z0-9_]*$', x) else x for x in cdef.split(','))
 
 
 def _key(value):
