@@ -67,7 +67,12 @@ module.exports = (env, options) => {
           use: {
             loader: 'html-loader',
             options: {
-              minimize: options.mode === 'production'
+              minimize: options.mode === 'production',
+              sources: {
+                urlFilter: (attribute, value, resourcePath) => {
+                  return !/\.(ico|png)$/.test(value)
+                }
+              }
             }
           }
         }
