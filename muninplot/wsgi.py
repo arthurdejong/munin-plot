@@ -24,6 +24,7 @@ import cgi
 import json
 import os
 import time
+import traceback
 
 import pkg_resources
 
@@ -80,10 +81,13 @@ def list_dashboards(environ, start_response):
         for filename in sorted(os.listdir(dashboards_dir)):
             filename = os.path.join(dashboards_dir, filename)
             if filename.endswith('.json') and os.path.isfile(filename):
-                with open(filename, 'rt') as f:
-                    dashboard = json.load(f)
-                    dashboard.setdefault('name', os.path.basename(filename)[:-5])
-                    dashboards[dashboard['name']] = dashboard
+                try:
+                    with open(filename, 'rt') as f:
+                        dashboard = json.load(f)
+                        dashboard.setdefault('name', os.path.basename(filename)[:-5])
+                        dashboards[dashboard['name']] = dashboard
+                except Exception:
+                    traceback.print_exc(file=environ['wsgi.errors'])
     start_response('200 OK', [
         ('Content-Type', 'application/json')])
     return [json.dumps(dashboards, indent=2, sort_keys=True).encode('utf-8')]
