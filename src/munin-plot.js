@@ -550,8 +550,8 @@ $(document).ready(function () {
         if (categoryFilter && graphs[graph].category !== categoryFilter) {
           return
         }
-        const descripton = (graph + ' ' + graphs[graph].graph_title + ' ' + graphs[graph].category).toLowerCase()
-        if (search.some(x => !descripton.includes(x))) {
+        const description = (graph + ' ' + graphs[graph].graph_title + ' ' + graphs[graph].category).toLowerCase()
+        if (search.some(x => !description.includes(x))) {
           return
         }
         const title = graphs[graph].graph_title || graph.split('/')[2]
