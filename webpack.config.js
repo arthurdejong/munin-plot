@@ -24,8 +24,9 @@ module.exports = (env, options) => {
       }),
       new webpack.ProvidePlugin({
         $: 'jquery',
-        jQuery: 'jquery',
         Plotly: 'plotly.js/dist/plotly-basic',
+        d3: 'd3',
+        jQuery: 'jquery',
         moment: 'moment'
       })
     ],

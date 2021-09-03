@@ -219,9 +219,9 @@ $(document).ready(function () {
       }))
       // update legend
       const columns = $(plot.legendbyfield[field]).find('td')
-      columns[2].textContent = (isNaN(minvalue) || !isFinite(minvalue)) ? '-' : Plotly.d3.format('.4s')(minvalue)
-      columns[3].textContent = (isNaN(avgvalue) || !isFinite(avgvalue)) ? '-' : Plotly.d3.format('.4s')(avgvalue)
-      columns[4].textContent = (isNaN(maxvalue) || !isFinite(maxvalue)) ? '-' : Plotly.d3.format('.4s')(maxvalue)
+      columns[2].textContent = (isNaN(minvalue) || !isFinite(minvalue)) ? '-' : d3.format('.4s')(minvalue)
+      columns[3].textContent = (isNaN(avgvalue) || !isFinite(avgvalue)) ? '-' : d3.format('.4s')(avgvalue)
+      columns[4].textContent = (isNaN(maxvalue) || !isFinite(maxvalue)) ? '-' : d3.format('.4s')(maxvalue)
     })
   }
 
@@ -233,7 +233,7 @@ $(document).ready(function () {
       const [amin, amax] = plot.layout.xaxis.range
       url += '?start=' + amin.substring(0, 16).replace(' ', 'T') + '&end=' + amax.substring(0, 16).replace(' ', 'T')
     }
-    Plotly.d3.csv(url, function (data) {
+    d3.csv(url).then(function (data) {
       // clear traces
       Object.keys(plot.tracebyfield).forEach(function (field) {
         plot.tracebyfield[field].x = []

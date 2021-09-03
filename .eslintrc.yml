@@ -7,8 +7,9 @@ extends:
   - standard
 globals:
   Atomics: readonly
-  SharedArrayBuffer: readonly
   Plotly: true
+  SharedArrayBuffer: readonly
+  d3: true
   moment: true
 parserOptions:
   ecmaVersion: 2018
