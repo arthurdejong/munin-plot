@@ -38,14 +38,6 @@ $(document).ready(function () {
   // make list of graphs draggable
   $('#draggablelist').sortable({
     handle: '.draghandle',
-    start: function () {
-      // hide and disable all tooltips
-      $('.tooltip').tooltip('hide').tooltip('disable')
-    },
-    stop: function () {
-      // enable tooltips again
-      $('.tooltip').tooltip('enable')
-    },
     update: function (event, ui) {
       // after any changes, save the current list of graphs
       saveCurrentGraphs()
@@ -317,13 +309,11 @@ $(document).ready(function () {
     const legend = clone.find('.mylegend')
     plot.graph = graph
     // update graph title
-    clone.find('.graphtitle').text(graph.host + ' / ')
+    clone.find('.graphtitle').append($('<div>').addClass('col').text(graph.host + ' / ')
       .append($('<b>').text(graph.graph_title))
-      .tooltip({title: graph.graph_info || ''})
-    // tooltip for drag handle
-    clone.find('.draghandle').tooltip({placement: 'right'})
+      .attr('title', graph.graph_info || ''))
     // set the size changing actions
-    clone.find('.sizesm').tooltip({placement: 'right'}).click(function () {
+    clone.find('.sizesm').click(function () {
       clone.find('.sizeactive').removeClass('sizeactive')
       $(this).addClass('sizeactive')
       $(plot).addClass('plot-sm').removeClass('plot-md plot-lg')
@@ -331,7 +321,7 @@ $(document).ready(function () {
       Plotly.relayout(plot, {})
       saveCurrentGraphs()
     })
-    clone.find('.sizemd').tooltip({placement: 'right'}).click(function () {
+    clone.find('.sizemd').click(function () {
       clone.find('.sizeactive').removeClass('sizeactive')
       $(this).addClass('sizeactive')
       $(plot).addClass('plot-md').removeClass('plot-sm plot-lg')
@@ -339,7 +329,7 @@ $(document).ready(function () {
       Plotly.relayout(plot, {})
       saveCurrentGraphs()
     })
-    clone.find('.sizelg').tooltip({placement: 'right'}).click(function () {
+    clone.find('.sizelg').click(function () {
       clone.find('.sizeactive').removeClass('sizeactive')
       $(this).addClass('sizeactive')
       $(plot).addClass('plot-lg').removeClass('plot-sm plot-md')
@@ -348,8 +338,7 @@ $(document).ready(function () {
       saveCurrentGraphs()
     })
     // configure the close button
-    clone.find('.closegraph').tooltip({placement: 'right'}).click(function () {
-      $(this).tooltip('dispose')
+    clone.find('.closegraph').click(function () {
       clone.hide(400, function () {
         Plotly.purge(plot)
         $(this).remove()
@@ -501,8 +490,6 @@ $(document).ready(function () {
     })
     // fetch the data and plot it
     loadGraph(plot, traces, layout)
-    // enable tooltips on legend
-    clone.find('.mylegend *[title]').tooltip({placement: 'bottom', container: 'body'})
     // show the graph
     clone.appendTo('#draggablelist')
     return plot
@@ -555,7 +542,7 @@ $(document).ready(function () {
           return
         }
         const title = graphs[graph].graph_title || graph.split('/')[2]
-        const graphelement = $('<a href="#" class="list-group-item list-group-item-action" data-toggle="collapse" data-target="#addgraph"></a>').text(title)
+        const graphelement = $('<a href="#" class="list-group-item list-group-item-action" data-bs-toggle="collapse" data-bs-target="#addgraph"></a>').text(title)
         // add the host graph unless a host graph has been selected
         if (!hostFilter) {
           graphelement.prepend($('<small></small>').text(graph.split('/')[1] + ' / '))
@@ -689,10 +676,10 @@ $(document).ready(function () {
   })
 
   // handle showing and hiding of the save dashboard dialog
-  $('#saveDashboard').on('shown.bs.modal', function () {
+  document.getElementById('saveDashboard').addEventListener('shown.bs.modal', function () {
     $('#saveDashboardName').trigger('focus')
   })
-  $('#saveDashboard').on('hidden.bs.modal', function () {
+  document.getElementById('saveDashboard').addEventListener('hidden.bs.modal', function () {
     $('#saveDashboardName').val('')
     $('#saveDashboard .alert').remove()
   })
@@ -733,7 +720,7 @@ $(document).ready(function () {
     // show notification
     $('<div class="alert alert-success">Copied to clipboard</div>').hide().appendTo('#saveDashboard .modal-body').show(200, function () {
       setTimeout(function () {
-        $('#saveDashboard').modal('hide')
+        bootstrap.Modal.getInstance(document.getElementById('saveDashboard')).hide()
       }, 600)
     })
   })
@@ -747,14 +734,14 @@ $(document).ready(function () {
     document.body.appendChild(element)
     element.click()
     document.body.removeChild(element)
-    $('#saveDashboard').modal('hide')
+    bootstrap.Modal.getInstance(document.getElementById('saveDashboard')).hide()
   })
 
   // handle showing and hiding of the load dashboard dialog
-  $('#loadDashboard').on('shown.bs.modal', function () {
+  document.getElementById('loadDashboard').addEventListener('shown.bs.modal', function () {
     $('#loadDashboardData').trigger('focus')
   })
-  $('#loadDashboard').on('hidden.bs.modal', function () {
+  document.getElementById('loadDashboard').addEventListener('hidden.bs.modal', function () {
     $('#loadDashboardData').val('')
     $('#loadDashboard .alert').remove()
   })
@@ -784,7 +771,7 @@ $(document).ready(function () {
         if (dashboard.name) {
           $('#dashboards button.dropdown-toggle span').text(dashboard.name)
         }
-        $('#loadDashboard').modal('hide')
+        bootstrap.Modal.getInstance(document.getElementById('loadDashboard')).hide()
       }
     } catch (e) {
       $('#loadDashboard .alert').remove()

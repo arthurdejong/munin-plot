@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" class="h-100">
 <!--
-  Copyright (C) 2018-2020 Arthur de Jong
+  Copyright (C) 2018-2021 Arthur de Jong
 
   Permission is hereby granted, free of charge, to any person obtaining a
   copy of this software and associated documentation files (the "Software"),
@@ -43,17 +43,17 @@
       <button class="btn btn-outline-secondary" type="button" id="clearGraphs" title="Close all graphs">
         <i class="fa fa-eraser"></i>
       </button>
-      <div class="btn-group" id="dashboards">
-        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown">
+      <div class="btn-group dropdown" id="dashboards">
+        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
           <i class="fa fa-tachometer-alt"></i>
           <span>Dashboards</span>
         </button>
         <div class="dropdown-menu"></div>
       </div>
-      <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#loadDashboard" title="Load dashboard" id="loadDashboardBtn"><i class="fa fa-file-import"></i></button>
-      <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#saveDashboard" title="Save dashboard"><i class="fa fa-save"></i></button>
+      <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#loadDashboard" title="Load dashboard" id="loadDashboardBtn"><i class="fa fa-file-import"></i></button>
+      <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#saveDashboard" title="Save dashboard"><i class="fa fa-save"></i></button>
     </div>
-    <div id="reportrange" class="dropdown-toggle btn btn-outline-secondary ml-auto d-none">
+    <div id="reportrange" class="dropdown-toggle btn btn-outline-secondary ms-auto d-none">
       <span></span>
       <i class="fa fa-calendar"></i>
     </div>
@@ -78,7 +78,7 @@
               <span class="closegraph" title="close"><i class="fa fa-window-close"></i></span>
             </div>
             <div class="card-rightbody">
-              <div class="container-fluid">
+              <div class="container-fluid px-0">
                 <div class="row graphtitle small"></div>
                 <div class="row">
                   <div class="myplot col col-sm-8">
@@ -106,7 +106,7 @@
 
     <div class="row addgraph">
       <div class="col col-sm-1">
-        <button class="btn btn-success" type="button" data-toggle="collapse" data-target="#addgraph" aria-expanded="false" aria-controls="addgraph"><i class="fa fa-plus"></i></button>
+        <button class="btn btn-success" type="button" data-bs-toggle="collapse" data-bs-target="#addgraph" aria-expanded="false" aria-controls="addgraph"><i class="fa fa-plus"></i></button>
       </div>
       <div class="col col-sm-8">
         <div class="collapse" id="addgraph">
@@ -146,7 +146,7 @@
         <form class="needs-validation" novalidate>
           <div class="modal-header">
             <h5 class="modal-title">Load dashboard</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
@@ -173,7 +173,7 @@
         <form class="needs-validation" novalidate>
           <div class="modal-header">
             <h5 class="modal-title">Save dashboard</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>

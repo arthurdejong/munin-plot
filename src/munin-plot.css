@@ -95,10 +95,6 @@ body {
 #template {
   display: none;
 }
-.myplot {
-  padding: 0;
-  width: 100%;
-}
 .plot-sm {
   height: 150px;
 }
