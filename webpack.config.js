@@ -9,7 +9,8 @@ module.exports = (env, options) => {
     output: {
       filename: 'munin-plot.[contenthash].js',
       path: path.resolve(__dirname, 'muninplot/static'),
-      publicPath: ''
+      publicPath: '',
+      assetModuleFilename: '[name][ext]'
     },
     optimization: {
       minimize: options.mode === 'production'
@@ -52,27 +53,14 @@ module.exports = (env, options) => {
         },
         {
           test: /\.(ico|png)$/,
-          use: [
-            {
-              loader: 'file-loader',
-              options: {
-                name: '[name].[ext]',
-                esModule: false
-              }
-            }
-          ]
+          type: 'asset/resource'
         },
         {
           test: /\.(html)$/,
           use: {
             loader: 'html-loader',
             options: {
-              minimize: options.mode === 'production',
-              sources: {
-                urlFilter: (attribute, value, resourcePath) => {
-                  return !/\.(ico|png)$/.test(value)
-                }
-              }
+              minimize: options.mode === 'production'
             }
           }
         }
