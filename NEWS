@@ -1,3 +1,13 @@
+changes from 1.1 to 1.2
+-----------------------
+
+* Improve the way data is fetched from the RRD files (use rrdtool xport)
+* Simplify data handling before being plotted
+* Improve handling gaps in graphs
+* Upgrade to Bootstrap 5
+* Various NPM package updates
+
+
 changes from 1.0 to 1.1
 -----------------------
 
