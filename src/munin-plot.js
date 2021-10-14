@@ -434,7 +434,7 @@ $(document).ready(function () {
     traces.slice().reverse().forEach(function (trace) {
       if (trace.showlegend !== false) {
         const legendrow = $('<tr></tr>')
-        legendrow.append($('<td style="width: 30px;"><svg height="10" width="20"><line x1="0" y1="5" x2="20" y2="5"></svg></td>'))
+        legendrow.append($('<td style="width: 20px;"><svg height="10" width="10"><line x1="0" y1="5" x2="10" y2="5"></svg></td>'))
         legendrow.append($('<td><span></span></td>'))
         legendrow.append($('<td></td>'))
         legendrow.append($('<td></td>'))
