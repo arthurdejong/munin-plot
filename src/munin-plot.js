@@ -119,6 +119,13 @@ $(document).ready(function () {
     '#80c9ff', '#ffc080', '#ffe680', '#aa80ff', '#ee00cc', '#ff8080',
     '#666600', '#ffbfff', '#00ffcc', '#cc6699', '#999900']
 
+  function getColor(value) {
+    if (value.startsWith('COLOUR')) {
+      return defaultColors[parseInt(value.substring(6)) % defaultColors.length]
+    }
+    return '#' + value
+  }
+
   const baseLayout = {
     margin: {l: 48, t: 0, r: 8, b: 32},
     autosize: true,
@@ -372,7 +379,7 @@ $(document).ready(function () {
     let stackgroup = 0
     for (let i = 0; i < plot.graph.fields.length; i++) {
       const field = plot.graph.fields[i]
-      const color = field.colour ? '#' + field.colour : defaultColors[i % defaultColors.length]
+      const color = field.colour ? getColor(field.colour) : defaultColors[i % defaultColors.length]
       if (field.draw === 'AREA' || field.draw === 'STACK' || field.draw === 'AREASTACK') {
         if (!field.draw.match(/STACK/) && (!plot.graph.fields[i + 1] || plot.graph.fields[i + 1].draw.match(/STACK/))) {
           stackgroup += 1
