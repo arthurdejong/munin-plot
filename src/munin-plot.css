@@ -118,6 +118,9 @@ body {
   border: none;
   text-align: center;
 }
+.mylegend .table > :not(:first-child) {
+  border: none;
+}
 .mylegend td {
   margin: 0;
   padding: 0;
