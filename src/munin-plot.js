@@ -86,9 +86,11 @@ $(document).ready(function () {
   // initialise the date range picker
   $('#reportrange').daterangepicker({
     locale: {
-      format: 'YYYY-MM-DD HH:mm'
+      format: 'YYYY-MM-DD HH:mm',
+      firstDay: 1
     },
     opens: 'left',
+    showISOWeekNumbers: true,
     timePicker: true,
     timePickerIncrement: 10,
     timePicker24Hour: true,
