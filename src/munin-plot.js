@@ -656,6 +656,55 @@ $(document).ready(function () {
     $('#dashboards button.dropdown-toggle span').text('Dashboards')
   })
 
+  // JSON serialise the data, compress and BASE64 encode
+  function compressData(data) {
+    const stream = new window.CompressionStream('deflate')
+    const writer = stream.writable.getWriter()
+    writer.write(new TextEncoder().encode(JSON.stringify(data)))
+    writer.close()
+    return new Response(stream.readable).arrayBuffer().then(
+      compressed => btoa(Array.from(new Uint8Array(compressed)).map(b => String.fromCharCode(b)).join('')))
+  }
+
+  // BASE64 decode, decompress and JSON deserialise the data
+  function decompressData(text) {
+    const stream = new window.DecompressionStream('deflate')
+    const writer = stream.writable.getWriter()
+    writer.write(Uint8Array.from(atob(text), x => x.charCodeAt(0)).buffer)
+    writer.close()
+    return new Response(stream.readable).arrayBuffer().then(
+      buffer => JSON.parse(new TextDecoder().decode(buffer))
+    )
+  }
+
+  // make the provided dashboard active
+  function setDashboard(dashboard) {
+    if (dashboard.dateRange) {
+      setDateRange(dashboard.dateRange.start, dashboard.dateRange.end)
+    }
+    setGraphs(dashboard.graphs)
+    if (dashboard.name) {
+      $('#dashboards button.dropdown-toggle span').text(dashboard.name)
+    }
+  }
+
+  // output readable but compact JSON
+  function getCurrentDashboard() {
+    let value = '{\n'
+    const name = $('#saveDashboardName').val()
+    if (name) {
+      value += '  "name": ' + JSON.stringify(name) + ',\n'
+    }
+    if ($('#saveDashboardDateRange:checked').length) {
+      const daterangepicker = $('#reportrange').data('daterangepicker')
+      const start = daterangepicker.startDate.format('YYYY-MM-DD HH:mm')
+      const end = daterangepicker.endDate.format('YYYY-MM-DD HH:mm')
+      value += '  "dateRange": ' + JSON.stringify({start: start, end: end}) + ',\n'
+    }
+    value += '  "graphs": ' + JSON.stringify(getCurrentGraphs()) + '\n}'
+    return value
+  }
+
   // configure the dashboards button
   $.getJSON('dashboards', function (dashboards) {
     if (Object.keys(dashboards).length === 0) {
@@ -665,12 +714,7 @@ $(document).ready(function () {
         const option = $('<button class="dropdown-item" type="button">').text(name)
         $('#dashboards .dropdown-menu').append(option)
         option.click(function () {
-          const dashboard = dashboards[name]
-          setGraphs(dashboard.graphs)
-          if (dashboard.dateRange) {
-            setDateRange(dashboard.dateRange.start, dashboard.dateRange.end)
-          }
-          $('#dashboards button.dropdown-toggle span').text(name)
+          setDashboard(dashboards[name])
         })
       })
       // add import action
@@ -688,10 +732,19 @@ $(document).ready(function () {
     $('.loadingrow').hide()
     $('.addgraph').show()
     $('nav .d-none').removeClass('d-none')
-    // restore previous list of graphs
-    try {
-      setGraphs(JSON.parse(localStorage.getItem('shownGraphs')))
-    } catch (error) {}
+    if (window.location.hash.length > 2) {
+      // get list of graphs from URL
+      decompressData(window.location.hash.slice(1)).then(function (dashboard) {
+        setDashboard(dashboard)
+      })
+      // remove the hash from the URL
+      history.replaceState(null, '', ' ')
+    } else {
+      // restore previous list of graphs
+      try {
+        setGraphs(JSON.parse(localStorage.getItem('shownGraphs')))
+      } catch (error) {}
+    }
   })
 
   // handle showing and hiding of the save dashboard dialog
@@ -703,21 +756,32 @@ $(document).ready(function () {
     $('#saveDashboard .alert').remove()
   })
 
-  // output readable but compact JSON
-  function getSaveDashboardData() {
-    let value = '{\n'
-    const name = $('#saveDashboardName').val()
-    if (name) {
-      value += '  "name": ' + JSON.stringify(name) + ',\n'
-    }
-    if ($('#saveDashboardDateRange:checked').length) {
-      const dateRange = JSON.parse(localStorage.getItem('dateRange'))
-      value += '  "dateRange": ' + JSON.stringify(dateRange) + ',\n'
-    }
-    const graphs = JSON.parse(localStorage.getItem('shownGraphs'))
-    value += '  "graphs": ' + JSON.stringify(graphs) + '\n}'
-    return value
-  }
+  // save dashboard data URL to clipboard
+  $('#saveDashboardUrl').on('click', function (event) {
+    // create a temporary text area
+    const textarea = document.createElement('textarea')
+    $(textarea).css({
+      position: 'absolute',
+      left: '-1000px',
+      top: '-1000px'
+    })
+    // fill text area with URL
+    compressData(JSON.parse(getCurrentDashboard())).then(function (data) {
+      textarea.value = window.location.href.split('#')[0] + '#' + data
+      // copy text area to clipboard
+      $('#saveDashboard form').append(textarea)
+      textarea.select()
+      textarea.setSelectionRange(0, 99999)
+      document.execCommand('copy')
+      $('#saveDashboard form textarea').remove()
+      // show notification
+      $('<div class="alert alert-success">Copied to clipboard</div>').hide().appendTo('#saveDashboard .modal-body').show(200, function () {
+        setTimeout(function () {
+          bootstrap.Modal.getInstance(document.getElementById('saveDashboard')).hide()
+        }, 600)
+      })
+    })
+  })
 
   // save dialog copy data to clipboard
   $('#saveDashboardClipboard').on('click', function (event) {
@@ -729,7 +793,7 @@ $(document).ready(function () {
       top: '-1000px'
     })
     // fill text area with JSON
-    textarea.value = getSaveDashboardData()
+    textarea.value = getCurrentDashboard()
     // copy text area to clipboard
     $('#saveDashboard form').append(textarea)
     textarea.select()
@@ -747,7 +811,7 @@ $(document).ready(function () {
   // save dashboard definition to file
   $('#saveDashboardFile').on('click', function (event) {
     const element = document.createElement('a')
-    element.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent(getSaveDashboardData() + '\n'))
+    element.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent(getCurrentDashboard() + '\n'))
     element.setAttribute('download', 'dashboard.json')
     element.style.display = 'none'
     document.body.appendChild(element)
@@ -783,13 +847,7 @@ $(document).ready(function () {
     try {
       const dashboard = JSON.parse($('#loadDashboardData').val())
       if (dashboard) {
-        setGraphs(dashboard.graphs)
-        if (dashboard.dateRange) {
-          setDateRange(dashboard.dateRange.start, dashboard.dateRange.end)
-        }
-        if (dashboard.name) {
-          $('#dashboards button.dropdown-toggle span').text(dashboard.name)
-        }
+        setDashboard(dashboard)
         bootstrap.Modal.getInstance(document.getElementById('loadDashboard')).hide()
       }
     } catch (e) {
