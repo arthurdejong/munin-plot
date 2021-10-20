@@ -49,6 +49,11 @@ $(document).ready(function () {
     return this.minutes(Math[how](this.minutes() / 10) * 10).seconds(0).seconds(0).milliseconds(0)
   }
 
+  // Save date range in local storage
+  function saveDateRange(start, end) {
+    localStorage.setItem('dateRange', JSON.stringify({start: start, end: end}))
+  }
+
   // set the date range across graphs and date range picker
   function setDateRange(start, end) {
     // ensure start and end are moments
@@ -80,7 +85,14 @@ $(document).ready(function () {
       }
     })
     // save date range in local storage
-    localStorage.setItem('dateRange', JSON.stringify({start: start, end: end}))
+    saveDateRange(start, end)
+  }
+
+  function getDateRange() {
+    const daterangepicker = $('#reportrange').data('daterangepicker')
+    const start = daterangepicker.startDate.format('YYYY-MM-DD HH:mm')
+    const end = daterangepicker.endDate.format('YYYY-MM-DD HH:mm')
+    return {start: start, end: end}
   }
 
   // initialise the date range picker
@@ -114,15 +126,6 @@ $(document).ready(function () {
       'This year': [moment().subtract(365, 'days').startOf('month'), moment().endOf('month').round10Minutes('ceil')]
     }
   })
-
-  try {
-    // restore the previously saved date range
-    const data = JSON.parse(localStorage.getItem('dateRange'))
-    setDateRange(data.start, data.end)
-  } catch (error) {
-    // set a default date range
-    setDateRange(moment().subtract(2, 'days'), moment().add(1, 'hour').round10Minutes('ceil'))
-  }
 
   const defaultColors = [
     '#00cc00', '#0066b3', '#ff8000', '#dbc300', '#330099', '#990099',
@@ -291,14 +294,13 @@ $(document).ready(function () {
     })
   }
 
-  // check if the axis match the data range and load more data as needed
+  // check if we have been flagged to update the data series for the plots
   function checkDataUpdates() {
     try {
       if (updatedata) {
         updatedata = false
         // go over all plots
-        $('.myplot').each(function () {
-          const plot = this
+        $('.myplot').each(function (index, plot) {
           if (plot.layout) {
             loadGraph(plot)
           }
@@ -322,6 +324,7 @@ $(document).ready(function () {
   }
   setTimeout(checkNewData, 60000)
 
+  // add a graph to the list of graphs
   function addGraph(graph, size = 'sm') {
     const clone = $('#template>:first-child').clone()
     const plot = clone.find('.myplot')[0]
@@ -380,10 +383,8 @@ $(document).ready(function () {
       layout.yaxis.exponentformat = 'E'
     }
     // get x axis zoom from date range selector
-    const daterangepicker = $('#reportrange').data('daterangepicker')
-    layout.xaxis.range = [
-      daterangepicker.startDate.format('YYYY-MM-DD HH:mm'),
-      daterangepicker.endDate.format('YYYY-MM-DD HH:mm')]
+    const range = getDateRange()
+    layout.xaxis.range = [range.start, range.end]
     // prepare the data series configuration
     const traces = []
     const tracebyfield = {}
@@ -696,10 +697,8 @@ $(document).ready(function () {
       value += '  "name": ' + JSON.stringify(name) + ',\n'
     }
     if ($('#saveDashboardDateRange:checked').length) {
-      const daterangepicker = $('#reportrange').data('daterangepicker')
-      const start = daterangepicker.startDate.format('YYYY-MM-DD HH:mm')
-      const end = daterangepicker.endDate.format('YYYY-MM-DD HH:mm')
-      value += '  "dateRange": ' + JSON.stringify({start: start, end: end}) + ',\n'
+      const range = getDateRange()
+      value += '  "dateRange": ' + JSON.stringify({start: range.start, end: range.end}) + ',\n'
     }
     value += '  "graphs": ' + JSON.stringify(getCurrentGraphs()) + '\n}'
     return value
@@ -721,29 +720,6 @@ $(document).ready(function () {
       $('#dashboards .dropdown-menu').append('<div class="dropdown-divider"></div>')
       $('#loadDashboardBtn').removeClass('btn btn-outline-secondary').addClass('dropdown-item')
       $('#dashboards .dropdown-menu').append($('#loadDashboardBtn').append(' Load'))
-    }
-  })
-
-  // load information on available graphs
-  $.getJSON('graphs', function (data) {
-    document.graph_data = data
-    updateSelect(data)
-    // hide loading indicator and show normal interface
-    $('.loadingrow').hide()
-    $('.addgraph').show()
-    $('nav .d-none').removeClass('d-none')
-    if (window.location.hash.length > 2) {
-      // get list of graphs from URL
-      decompressData(window.location.hash.slice(1)).then(function (dashboard) {
-        setDashboard(dashboard)
-      })
-      // remove the hash from the URL
-      history.replaceState(null, '', ' ')
-    } else {
-      // restore previous list of graphs
-      try {
-        setGraphs(JSON.parse(localStorage.getItem('shownGraphs')))
-      } catch (error) {}
     }
   })
 
@@ -853,6 +829,38 @@ $(document).ready(function () {
     } catch (e) {
       $('#loadDashboard .alert').remove()
       $('<div class="alert alert-danger"></div>').text('Error: ' + e.name + ': ' + e.message).hide().appendTo('#loadDashboard .modal-body').show(200)
+    }
+  })
+
+  try {
+    // restore the previously saved date range
+    const data = JSON.parse(localStorage.getItem('dateRange'))
+    setDateRange(data.start, data.end)
+  } catch (error) {
+    // set a default date range
+    setDateRange(moment().subtract(2, 'days'), moment().add(1, 'hour').round10Minutes('ceil'))
+  }
+
+  // load information on available graphs
+  $.getJSON('graphs', function (data) {
+    document.graph_data = data
+    updateSelect(data)
+    // hide loading indicator and show normal interface
+    $('.loadingrow').hide()
+    $('.addgraph').show()
+    $('nav .d-none').removeClass('d-none')
+    if (window.location.hash.length > 2) {
+      // get list of graphs from URL
+      decompressData(window.location.hash.slice(1)).then(function (dashboard) {
+        setDashboard(dashboard)
+      })
+      // remove the hash from the URL
+      history.replaceState(null, '', ' ')
+    } else {
+      // restore previous list of graphs
+      try {
+        setGraphs(JSON.parse(localStorage.getItem('shownGraphs')))
+      } catch (error) {}
     }
   })
 })
