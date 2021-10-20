@@ -704,6 +704,18 @@ $(document).ready(function () {
     return value
   }
 
+  // get dashboard data from URL
+  function loadDashboardFromHash() {
+    if (window.location.hash.length > 2) {
+      // get list of graphs from URL
+      decompressData(window.location.hash.slice(1)).then(function (dashboard) {
+        setDashboard(dashboard)
+      })
+      // remove the hash from the URL
+      history.replaceState(null, '', ' ')
+    }
+  }
+
   // configure the dashboards button
   $.getJSON('dashboards', function (dashboards) {
     if (Object.keys(dashboards).length === 0) {
@@ -850,17 +862,17 @@ $(document).ready(function () {
     $('.addgraph').show()
     $('nav .d-none').removeClass('d-none')
     if (window.location.hash.length > 2) {
-      // get list of graphs from URL
-      decompressData(window.location.hash.slice(1)).then(function (dashboard) {
-        setDashboard(dashboard)
-      })
-      // remove the hash from the URL
-      history.replaceState(null, '', ' ')
+      loadDashboardFromHash()
     } else {
       // restore previous list of graphs
       try {
         setGraphs(JSON.parse(localStorage.getItem('shownGraphs')))
       } catch (error) {}
     }
+  })
+
+  // handle changes to hash
+  window.addEventListener('hashchange', function () {
+    loadDashboardFromHash()
   })
 })
