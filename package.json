@@ -23,22 +23,22 @@
     "plotly.js": "^2.5.1"
   },
   "devDependencies": {
-    "autoprefixer": "^10.3.7",
-    "css-loader": "^6.4.0",
-    "eslint": "^7.32.0",
+    "autoprefixer": "^10.4.0",
+    "css-loader": "^6.5.0",
+    "eslint": "^7.23.0",
     "eslint-config-standard": "^16.0.3",
     "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^5.1.0",
     "file-loader": "^6.2.0",
-    "html-loader": "^2.1.2",
-    "html-webpack-plugin": "^5.3.2",
+    "html-loader": "^3.0.0",
+    "html-webpack-plugin": "^5.5.0",
     "mini-css-extract-plugin": "^2.4.2",
     "node-sass": "^6.0.1",
     "postcss-loader": "^6.2.0",
-    "sass-loader": "^12.2.0",
+    "sass-loader": "^12.3.0",
     "style-loader": "^3.3.0",
-    "webpack": "^5.58.2",
-    "webpack-cli": "^4.9.0"
+    "webpack": "^5.60.0",
+    "webpack-cli": "^4.9.1"
   }
 }
