@@ -589,7 +589,7 @@ $(document).ready(function () {
   function getCurrentGraphs() {
     return $('.myplot').map(function () {
       if (this && this.layout) {
-        return {
+        const result = {
           name: this.graph.name,
           size: (function (graph) {
             if ($(graph).hasClass('plot-sm')) {
@@ -606,6 +606,10 @@ $(document).ready(function () {
             return field
           })
         }
+        if (!result.hidden.length) {
+          delete result.hidden
+        }
+        return result
       }
       return undefined
     }).toArray()
