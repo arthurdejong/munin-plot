@@ -9,7 +9,7 @@
   "scripts": {
     "build": "webpack --mode production",
     "dev-build": "webpack --mode development --watch",
-    "eslint": "eslint src/**/*.js *.js"
+    "eslint": "eslint src/**/*.js webpack-plugins/**/*.js *.js"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15.4",
@@ -21,6 +21,7 @@
     "plotly.js": "^2.8.0"
   },
   "devDependencies": {
+    "archiver": "^5.3.0",
     "autoprefixer": "^10.4.0",
     "css-loader": "^6.5.0",
     "eslint": "^7.23.0",

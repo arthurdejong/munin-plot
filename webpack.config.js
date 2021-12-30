@@ -1,5 +1,6 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const ZipPlugin = require('./webpack-plugins/zip-plugin')
 const path = require('path')
 const webpack = require('webpack')
 
@@ -29,6 +30,28 @@ module.exports = (env, options) => {
         d3: 'd3',
         jQuery: 'jquery',
         moment: 'moment'
+      }),
+      new ZipPlugin({
+        filename: 'munin-plot.zip',
+        entries: [
+          '*.py',
+          '.eslintrc.yml',
+          'COPYING',
+          'MANIFEST.in',
+          'NEWS',
+          'README.md',
+          'muninplot/**/*.py',
+          'package*.json',
+          'setup.cfg',
+          'src/*.css',
+          'src/*.html',
+          'src/*.ico',
+          'src/*.js',
+          'src/*.png',
+          'tox.ini',
+          'webpack-plugins/*.js',
+          'webpack.config.js'
+        ]
       })
     ],
     module: {
