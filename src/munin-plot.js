@@ -33,6 +33,7 @@ require('daterangepicker')
 require('daterangepicker/daterangepicker.css')
 require('@fortawesome/fontawesome-free/js/all')
 require('./munin-plot.css')
+const pako = require('pako')
 
 $(document).ready(function () {
   // make list of graphs draggable
@@ -663,23 +664,12 @@ $(document).ready(function () {
 
   // JSON serialise the data, compress and BASE64 encode
   function compressData(data) {
-    const stream = new window.CompressionStream('deflate')
-    const writer = stream.writable.getWriter()
-    writer.write(new TextEncoder().encode(JSON.stringify(data)))
-    writer.close()
-    return new Response(stream.readable).arrayBuffer().then(
-      compressed => btoa(Array.from(new Uint8Array(compressed)).map(b => String.fromCharCode(b)).join('')))
+    return btoa(Array.from(pako.deflate(JSON.stringify(data))).map(b => String.fromCharCode(b)).join(''))
   }
 
   // BASE64 decode, decompress and JSON deserialise the data
   function decompressData(text) {
-    const stream = new window.DecompressionStream('deflate')
-    const writer = stream.writable.getWriter()
-    writer.write(Uint8Array.from(atob(text), x => x.charCodeAt(0)).buffer)
-    writer.close()
-    return new Response(stream.readable).arrayBuffer().then(
-      buffer => JSON.parse(new TextDecoder().decode(buffer))
-    )
+    return JSON.parse(pako.inflate(atob(text).split('').map(x => x.charCodeAt(0)), {to: 'string'}))
   }
 
   // make the provided dashboard active
@@ -712,9 +702,7 @@ $(document).ready(function () {
   function loadDashboardFromHash() {
     if (window.location.hash.length > 2) {
       // get list of graphs from URL
-      decompressData(window.location.hash.slice(1)).then(function (dashboard) {
-        setDashboard(dashboard)
-      })
+      setDashboard(decompressData(window.location.hash.slice(1)))
       // remove the hash from the URL
       history.replaceState(null, '', ' ')
     }
@@ -758,20 +746,18 @@ $(document).ready(function () {
       top: '-1000px'
     })
     // fill text area with URL
-    compressData(JSON.parse(getCurrentDashboard())).then(function (data) {
-      textarea.value = window.location.href.split('#')[0] + '#' + data
-      // copy text area to clipboard
-      $('#saveDashboard form').append(textarea)
-      textarea.select()
-      textarea.setSelectionRange(0, 99999)
-      document.execCommand('copy')
-      $('#saveDashboard form textarea').remove()
-      // show notification
-      $('<div class="alert alert-success">Copied to clipboard</div>').hide().appendTo('#saveDashboard .modal-body').show(200, function () {
-        setTimeout(function () {
-          bootstrap.Modal.getInstance(document.getElementById('saveDashboard')).hide()
-        }, 600)
-      })
+    textarea.value = window.location.href.split('#')[0] + '#' + compressData(JSON.parse(getCurrentDashboard()))
+    // copy text area to clipboard
+    $('#saveDashboard form').append(textarea)
+    textarea.select()
+    textarea.setSelectionRange(0, 99999)
+    document.execCommand('copy')
+    $('#saveDashboard form textarea').remove()
+    // show notification
+    $('<div class="alert alert-success">Copied to clipboard</div>').hide().appendTo('#saveDashboard .modal-body').show(200, function () {
+      setTimeout(function () {
+        bootstrap.Modal.getInstance(document.getElementById('saveDashboard')).hide()
+      }, 600)
     })
   })
 
