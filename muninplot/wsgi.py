@@ -20,11 +20,11 @@
 
 """Simple WSGI application to run the munin-plot application."""
 
-import cgi
 import json
 import os
 import time
 import traceback
+import urllib.parse
 
 import pkg_resources
 
@@ -122,7 +122,7 @@ def get_data(environ, start_response):
     """Return a data series for the graph as CSV."""
     path = environ.get('PATH_INFO', '').lstrip('/')
     _, group, host, graph = path.split('/')
-    parameters = cgi.parse_qs(environ.get('QUERY_STRING', ''))
+    parameters = urllib.parse.parse_qs(environ.get('QUERY_STRING', ''))
     # get the time range to fetch the data for
     end = parameters.get('end')
     end = _parse_timestamp(end[0]) if end else time.time()
