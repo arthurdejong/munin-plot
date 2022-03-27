@@ -1,4 +1,5 @@
 include README.md NEWS ChangeLog COPYING tox.ini
 include package.json package-lock.json webpack.config.js .eslintrc.yml
 recursive-include src *.html *.js *.css *.png *.ico
+recursive-include webpack-plugins *.html *.js *.css *.png *.ico
 prune muninplot/static
