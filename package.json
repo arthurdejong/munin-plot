@@ -17,7 +17,7 @@
     "d3": "^7.3.0",
     "daterangepicker": "^3.1.0",
     "jquery": "^3.6.0",
-    "jquery-ui": "^1.13.1",
+    "jquery-ui": "^1.13.2",
     "pako": "^2.0.4",
     "plotly.js": "^2.11.1"
   },
