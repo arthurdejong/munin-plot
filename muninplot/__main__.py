@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2020 Arthur de Jong
+# Copyright (C) 2018-2023 Arthur de Jong
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -20,14 +20,20 @@
 
 """Development server that runs the WSGI application."""
 
+import os
 import sys
 from wsgiref.simple_server import make_server
+
+import pkg_resources
 
 from muninplot.wsgi import application
 
 
 def devserver():
     """Run a development server."""
+    if not pkg_resources.resource_exists('muninplot', os.path.join('static', 'index.html')):
+        raise SystemExit('ERROR: Static files are missing, build with:\n' +
+                         '  npm install; npm run build')
     sys.stdout = sys.stderr
     srv = make_server('0.0.0.0', 8080, application)
     srv.serve_forever()
