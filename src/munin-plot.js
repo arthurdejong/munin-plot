@@ -52,7 +52,7 @@ $(document).ready(function () {
 
   // Save date range in local storage
   function saveDateRange(start, end) {
-    localStorage.setItem('dateRange', JSON.stringify({start: start, end: end}))
+    localStorage.setItem('dateRange', JSON.stringify({start, end}))
   }
 
   // set the date range across graphs and date range picker
@@ -93,7 +93,7 @@ $(document).ready(function () {
     const daterangepicker = $('#reportrange').data('daterangepicker')
     const start = daterangepicker.startDate.format('YYYY-MM-DD HH:mm')
     const end = daterangepicker.endDate.format('YYYY-MM-DD HH:mm')
-    return {start: start, end: end}
+    return {start, end}
   }
 
   // initialise the date range picker
@@ -416,7 +416,7 @@ $(document).ready(function () {
           field_name: field.name,
           name: field.label || field.name,
           info: field.info || '',
-          line: {color: color},
+          line: {color},
           hoverlabel: {bgcolor: color + 'c0'}
         }
         const minTrace = {
