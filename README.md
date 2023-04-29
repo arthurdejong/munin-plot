@@ -55,7 +55,7 @@ exported from munin-plot and be manually copied to this directory.
 Copyright
 ---------
 
-Copyright (C) 2018-2022 Arthur de Jong
+Copyright (C) 2018-2023 Arthur de Jong
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
