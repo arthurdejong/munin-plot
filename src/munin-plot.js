@@ -452,7 +452,7 @@ $(document).ready(function () {
     }
     // build the legend
     plot.legendbyfield = {}
-    traces.slice().reverse().forEach(function (trace) {
+    traces.slice().forEach(function (trace) {
       if (trace.showlegend !== false) {
         const legendrow = $('<tr></tr>')
         legendrow.append($('<td style="width: 20px;"><svg height="10" width="10"><line x1="0" y1="5" x2="10" y2="5"></svg></td>'))
