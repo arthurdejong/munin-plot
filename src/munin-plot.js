@@ -332,9 +332,9 @@ $(document).ready(function () {
     const legend = clone.find('.mylegend')
     plot.graph = graph
     // update graph title
-    clone.find('.graphtitle').append($('<div>').addClass('col').text(graph.host + ' / ')
+    clone.find('.graphtitle').text(graph.host + ' / ')
       .append($('<b>').text(graph.graph_title))
-      .attr('title', graph.graph_info || ''))
+      .attr('title', graph.graph_info || '')
     // set the size changing actions
     clone.find('.sizesm').click(function () {
       clone.find('.sizeactive').removeClass('sizeactive')
@@ -368,6 +368,62 @@ $(document).ready(function () {
         // after any changes, save the current list of graphs
         saveCurrentGraphs()
       })
+    })
+    // set the selection changing actions
+    clone.find('.selectall').click(function () {
+      if (plot.data) {
+        traces.slice().reverse().forEach(function (trace) {
+          if (trace.showlegend !== false) {
+            plot.legendbyfield[trace.field_name].style.opacity = 1
+            plot.data.forEach(function (t) {
+              if (t.field_name === trace.field_name) {
+                t.visible = true
+              }
+            })
+          }
+        })
+        saveCurrentGraphs()
+        Plotly.newPlot(plot, plot.data, plot.layout, plot.config)
+      }
+    })
+    clone.find('.selecttoggle').click(function () {
+      if (plot.data) {
+        traces.slice().reverse().forEach(function (trace) {
+          if (trace.showlegend !== false) {
+            const visible = (trace.visible === false)
+            plot.legendbyfield[trace.field_name].style.opacity = visible ? 1 : 0.2
+            plot.data.forEach(function (t) {
+              if (t.field_name === trace.field_name) {
+                t.visible = visible
+              }
+            })
+          }
+        })
+        saveCurrentGraphs()
+        Plotly.newPlot(plot, plot.data, plot.layout, plot.config)
+      }
+    })
+    clone.find('.selectnone').click(function () {
+      if (plot.data) {
+        traces.slice().reverse().forEach(function (trace) {
+          if (trace.field_name === 'idle') {
+            console.log(trace)
+            console.log(trace.name, trace.field_name, trace.visible)
+          }
+        })
+        traces.slice().reverse().forEach(function (trace) {
+          if (trace.showlegend !== false) {
+            plot.legendbyfield[trace.field_name].style.opacity = 0.2
+            plot.data.forEach(function (t) {
+              if (t.field_name === trace.field_name) {
+                t.visible = false
+              }
+            })
+          }
+        })
+        saveCurrentGraphs()
+        Plotly.newPlot(plot, plot.data, plot.layout, plot.config)
+      }
     })
     // set the wanted size
     $(plot).addClass('plot-' + size)
@@ -479,7 +535,7 @@ $(document).ready(function () {
               }
             })
             saveCurrentGraphs()
-            Plotly.redraw(plot)
+            Plotly.newPlot(plot, plot.data, plot.layout, plot.config)
           }
         })
         // highlight the trace by lowering the opacity of the others traces
