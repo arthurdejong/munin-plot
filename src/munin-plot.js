@@ -538,6 +538,25 @@ $(document).ready(function () {
             Plotly.newPlot(plot, plot.data, plot.layout, plot.config)
           }
         })
+        // hide all other traces on double click
+        legendrow.on('dblclick', function () {
+          if (plot.data) {
+            const selected = trace
+            traces.slice().forEach(function (trace) {
+              if (trace.showlegend !== false) {
+                const visible = (trace.field_name === selected.field_name)
+                plot.legendbyfield[trace.field_name].style.opacity = visible ? 1 : 0.2
+                plot.data.forEach(function (t) {
+                  if (t.field_name === trace.field_name) {
+                    t.visible = visible
+                  }
+                })
+              }
+            })
+            saveCurrentGraphs()
+            Plotly.newPlot(plot, plot.data, plot.layout, plot.config)
+          }
+        })
         // highlight the trace by lowering the opacity of the others traces
         legendrow.mouseover(function () {
           if (plot.data) {
