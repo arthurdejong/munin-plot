@@ -1,3 +1,15 @@
+changes from 1.6 to 1.7
+-----------------------
+
+* Fix the order of items in the legend to match the Munin plugin order
+* Allow better selections of items to show in the graph via buttons (select
+  all, select none and toggle selection) as well as focusing on a single item
+  through double click
+* Various NPM package updates (includes fixes for a number of CVEs, none of
+  which should affect munin-plot because we don't supply untrusted content to
+  the affected components or don't use affected functionality)
+
+
 changes from 1.5 to 1.6
 -----------------------
 
