@@ -9,7 +9,7 @@
   "scripts": {
     "build": "webpack --mode production",
     "dev-build": "webpack --mode development --watch",
-    "eslint": "eslint --max-warnings 0 src/**/*.js webpack-plugins/**/*.js *.js"
+    "eslint": "eslint --max-warnings 0 src/**/*.js webpack-plugins/**/*.js *.js *.mjs"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.7.2",
@@ -22,18 +22,19 @@
     "plotly.js": "^3.0.0"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.2.0",
+    "@eslint/js": "^9.19.0",
+    "@stylistic/eslint-plugin": "^3.0.1",
     "archiver": "^7.0.1",
     "autoprefixer": "^10.4.20",
     "css-loader": "^7.1.2",
-    "eslint": "^8.57.0",
-    "eslint-config-standard": "^17.1.0",
-    "eslint-plugin-import": "^2.30.0",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^6.1.1",
+    "eslint": "^9.19.0",
     "file-loader": "^6.2.0",
+    "globals": "^15.14.0",
     "html-loader": "^5.1.0",
     "html-webpack-plugin": "^5.6.3",
     "mini-css-extract-plugin": "^2.9.2",
+    "neostandard": "^0.12.1",
     "postcss-loader": "^8.1.1",
     "sass": "^1.83.4",
     "sass-loader": "^16.0.4",

@@ -932,7 +932,9 @@ $(document).ready(function () {
       // restore previous list of graphs
       try {
         setGraphs(JSON.parse(localStorage.getItem('shownGraphs')))
-      } catch (error) {}
+      } catch (error) {
+        // ignore errors
+      }
     }
   })
 
