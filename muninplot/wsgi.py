@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2021 Arthur de Jong
+# Copyright (C) 2018-2025 Arthur de Jong
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -35,6 +35,19 @@ from muninplot.data import get_info, get_values
 DASHBOARDS_DIR = os.environ.get('DASHBOARDS_DIR', None)
 
 
+# The value of the Content-Security-Policy header
+CSP_VALUE = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; " + \
+            "script-src 'self' 'unsafe-eval'; frame-ancestors 'none'"
+
+
+def notfound_response(start_response):
+    """Return a 404 NOT FOUND response."""
+    start_response('404 NOT FOUND', [
+        ('Content-Type', 'text/plain'),
+        ('Content-Security-Policy', CSP_VALUE)])
+    return [b'NOT FOUND']
+
+
 def static_serve(environ, start_response):
     """Server static files that are shipped with the package."""
     path = environ.get('PATH_INFO', '').lstrip('/') or 'index.html'
@@ -51,17 +64,12 @@ def static_serve(environ, start_response):
         content_type = 'image/vnd.microsoft.icon'
     else:
         content_type = 'application/octet-stream'
-    csp = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; " + \
-          "script-src 'self' 'unsafe-eval'; frame-ancestors 'none'"
     path = os.path.join('static', path)
     if not pkg_resources.resource_exists('muninplot', path):
-        start_response('404 NOT FOUND', [
-            ('Content-Type', 'text/plain'),
-            ('Content-Security-Policy', csp)])
-        return [b'FILE NOT FOUND']
+        return notfound_response(start_response)
     start_response('200 OK', [
         ('Content-Type', content_type),
-        ('Content-Security-Policy', csp)])
+        ('Content-Security-Policy', CSP_VALUE)])
     return [pkg_resources.resource_stream('muninplot', path).read()]
 
 
@@ -120,8 +128,10 @@ def _parse_timestamp(timestamp):
 
 def get_data(environ, start_response):
     """Return a data series for the graph as CSV."""
-    path = environ.get('PATH_INFO', '').lstrip('/')
-    _, group, host, graph = path.split('/')
+    path = environ.get('PATH_INFO', '').lstrip('/').removeprefix('data/')
+    if path not in get_info():
+        return notfound_response(start_response)
+    group, host, graph = path.split('/')
     parameters = urllib.parse.parse_qs(environ.get('QUERY_STRING', ''))
     # get the time range to fetch the data for
     end = parameters.get('end')
