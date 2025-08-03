@@ -1,5 +1,5 @@
 /*!
-  Copyright (C) 2018-2021 Arthur de Jong
+  Copyright (C) 2018-2025 Arthur de Jong
 
   Permission is hereby granted, free of charge, to any person obtaining a
   copy of this software and associated documentation files (the "Software"),
@@ -383,7 +383,7 @@ $(document).ready(function () {
           }
         })
         saveCurrentGraphs()
-        Plotly.newPlot(plot, plot.data, plot.layout, plot.config)
+        Plotly.react(plot, plot.data, plot.layout, plot.config)
       }
     })
     clone.find('.selecttoggle').click(function () {
@@ -400,17 +400,11 @@ $(document).ready(function () {
           }
         })
         saveCurrentGraphs()
-        Plotly.newPlot(plot, plot.data, plot.layout, plot.config)
+        Plotly.react(plot, plot.data, plot.layout, plot.config)
       }
     })
     clone.find('.selectnone').click(function () {
       if (plot.data) {
-        traces.slice().reverse().forEach(function (trace) {
-          if (trace.field_name === 'idle') {
-            console.log(trace)
-            console.log(trace.name, trace.field_name, trace.visible)
-          }
-        })
         traces.slice().reverse().forEach(function (trace) {
           if (trace.showlegend !== false) {
             plot.legendbyfield[trace.field_name].style.opacity = 0.2
@@ -422,7 +416,7 @@ $(document).ready(function () {
           }
         })
         saveCurrentGraphs()
-        Plotly.newPlot(plot, plot.data, plot.layout, plot.config)
+        Plotly.react(plot, plot.data, plot.layout, plot.config)
       }
     })
     // set the wanted size
@@ -524,7 +518,7 @@ $(document).ready(function () {
         legendrow.find('span').attr('title', trace.info).text(trace.name)
         legend.find('tbody').append(legendrow)
         plot.legendbyfield[trace.field_name] = legendrow[0]
-        // handle showing/hiding the trace
+        // handle showing/hiding the trace by clicking in the legend
         legendrow.click(function () {
           if (plot.data) {
             const visible = (trace.visible === false)
@@ -535,10 +529,10 @@ $(document).ready(function () {
               }
             })
             saveCurrentGraphs()
-            Plotly.newPlot(plot, plot.data, plot.layout, plot.config)
+            Plotly.react(plot, plot.data, plot.layout, plot.config)
           }
         })
-        // hide all other traces on double click
+        // hide all other traces on double click in the legend
         legendrow.on('dblclick', function () {
           if (plot.data) {
             const selected = trace
@@ -554,7 +548,7 @@ $(document).ready(function () {
               }
             })
             saveCurrentGraphs()
-            Plotly.newPlot(plot, plot.data, plot.layout, plot.config)
+            Plotly.react(plot, plot.data, plot.layout, plot.config)
           }
         })
         // highlight the trace by lowering the opacity of the others traces
