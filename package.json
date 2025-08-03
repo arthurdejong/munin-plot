@@ -12,7 +12,7 @@
     "eslint": "eslint --max-warnings 0 src/**/*.js webpack-plugins/**/*.js *.js *.mjs"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-free": "^6.7.2",
+    "@fortawesome/fontawesome-free": "^7.0.0",
     "bootstrap": "^5.3.7",
     "d3": "^7.9.0",
     "daterangepicker": "^3.1.0",
