@@ -1,3 +1,13 @@
+changes from 1.8 to 1.9
+-----------------------
+
+* Add extra request validation in web service
+* Fix a bug where graphs could become unresponsive when (de)selecting tracks
+* Various NPM package updates (includes fixes for a number of CVEs, none of
+  which should affect munin-plot because we don't supply untrusted content to
+  the affected components or don't use affected functionality)
+
+
 changes from 1.7 to 1.8
 -----------------------
 
