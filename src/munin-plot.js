@@ -162,9 +162,11 @@ $(document).ready(function () {
         size: 10,
         color: '#7f7f7f'
       },
-      titlefont: {
-        size: 10,
-        color: '#7f7f7f'
+      title: {
+        font: {
+          size: 10,
+          color: '#7f7f7f'
+        }
       },
       exponentformat: 'SI',
       hoverformat: '.4s'
@@ -427,7 +429,7 @@ $(document).ready(function () {
     // prepare the graph configuration
     const layout = JSON.parse(JSON.stringify(baseLayout))
     if (plot.graph.graph_vlabel) {
-      layout.yaxis.title = plot.graph.graph_vlabel
+      layout.yaxis.title.text = plot.graph.graph_vlabel
     }
     if (plot.graph.graph_args && plot.graph.graph_args.match(/--logarithmic/)) {
       layout.yaxis.type = 'log'
