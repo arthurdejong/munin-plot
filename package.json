@@ -12,34 +12,34 @@
     "eslint": "eslint --max-warnings 0 src/**/*.js webpack-plugins/**/*.js *.js *.mjs"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-free": "^7.0.0",
-    "bootstrap": "^5.3.7",
+    "@fortawesome/fontawesome-free": "^7.1.0",
+    "bootstrap": "^5.3.8",
     "d3": "^7.9.0",
     "daterangepicker": "^3.1.0",
     "jquery": "^3.7.1",
     "jquery-ui": "^1.14.1",
     "pako": "^2.1.0",
-    "plotly.js": "^3.0.3"
+    "plotly.js": "^3.2.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
-    "@eslint/js": "^9.32.0",
-    "@stylistic/eslint-plugin": "^5.2.2",
+    "@eslint/js": "^9.38.0",
+    "@stylistic/eslint-plugin": "^5.5.0",
     "archiver": "^7.0.1",
     "autoprefixer": "^10.4.21",
     "css-loader": "^7.1.2",
-    "eslint": "^9.32.0",
+    "eslint": "^9.38.0",
     "file-loader": "^6.2.0",
-    "globals": "^16.3.0",
+    "globals": "^16.4.0",
     "html-loader": "^5.1.0",
-    "html-webpack-plugin": "^5.6.3",
-    "mini-css-extract-plugin": "^2.9.2",
+    "html-webpack-plugin": "^5.6.4",
+    "mini-css-extract-plugin": "^2.9.4",
     "neostandard": "^0.12.2",
-    "postcss-loader": "^8.1.1",
-    "sass": "^1.89.2",
-    "sass-loader": "^16.0.5",
+    "postcss-loader": "^8.2.0",
+    "sass": "^1.93.3",
+    "sass-loader": "^16.0.6",
     "style-loader": "^4.0.0",
-    "webpack": "^5.101.0",
+    "webpack": "^5.102.1",
     "webpack-cli": "^6.0.1"
   }
 }
