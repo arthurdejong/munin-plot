@@ -1,3 +1,12 @@
+changes from 1.9 to 1.10
+------------------------
+
+* Restore displaying Y-axis label that got lost in version 1.9
+* Include missing eslint config in source package
+* Various NPM package updates (includes fixes for a number of CVEs, none of
+  which should affect munin-plot because we don't supply untrusted content to
+  the affected components or don't use affected functionality)
+
 changes from 1.8 to 1.9
 -----------------------
 
