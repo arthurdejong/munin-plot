@@ -19,27 +19,27 @@
     "jquery": "^3.7.1",
     "jquery-ui": "^1.14.1",
     "pako": "^2.1.0",
-    "plotly.js": "^3.3.0"
+    "plotly.js": "^3.3.1"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3.3.1",
-    "@eslint/js": "^9.39.1",
-    "@stylistic/eslint-plugin": "^5.5.0",
+    "@eslint/eslintrc": "^3.3.3",
+    "@eslint/js": "^9.39.2",
+    "@stylistic/eslint-plugin": "^5.6.1",
     "archiver": "^7.0.1",
-    "autoprefixer": "^10.4.22",
+    "autoprefixer": "^10.4.23",
     "css-loader": "^7.1.2",
-    "eslint": "^9.39.1",
+    "eslint": "^9.39.2",
     "file-loader": "^6.2.0",
     "globals": "^16.5.0",
     "html-loader": "^5.1.0",
-    "html-webpack-plugin": "^5.6.4",
+    "html-webpack-plugin": "^5.6.5",
     "mini-css-extract-plugin": "^2.9.4",
     "neostandard": "^0.12.2",
     "postcss-loader": "^8.2.0",
-    "sass": "^1.94.0",
+    "sass": "^1.97.1",
     "sass-loader": "^16.0.6",
     "style-loader": "^4.0.0",
-    "webpack": "^5.102.1",
+    "webpack": "^5.104.1",
     "webpack-cli": "^6.0.1"
   }
 }
