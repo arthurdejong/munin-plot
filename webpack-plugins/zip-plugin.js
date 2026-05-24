@@ -35,7 +35,7 @@ class ZipPlugin {
       const entrydata = {
         date: new Date()
       }
-      const archive = archiver('zip', {zlib: {level: 9}})
+      const archive = new archiver.ZipArchive({zlib: {level: 9}})
       archive.pipe(fs.createWriteStream(path.join(compilation.options.output.path, options.filename)))
       archive.glob(options.entries, {nodir: true, ignore: options.exclude}, entrydata)
       archive.finalize()
