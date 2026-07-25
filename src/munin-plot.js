@@ -34,6 +34,7 @@ require('daterangepicker/daterangepicker.css')
 require('@fortawesome/fontawesome-free/js/all')
 require('./munin-plot.css')
 const pako = require('pako')
+const $ = require('jquery')
 
 $(document).ready(function () {
   // make list of graphs draggable
