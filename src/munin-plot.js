@@ -1,5 +1,5 @@
 /*!
-  Copyright (C) 2018-2025 Arthur de Jong
+  Copyright (C) 2018-2026 Arthur de Jong
 
   Permission is hereby granted, free of charge, to any person obtaining a
   copy of this software and associated documentation files (the "Software"),
@@ -740,7 +740,7 @@ $(document).ready(function () {
 
   // BASE64 decode, decompress and JSON deserialise the data
   function decompressData(text) {
-    return JSON.parse(pako.inflate(atob(text).split('').map(x => x.charCodeAt(0)), {to: 'string'}))
+    return JSON.parse(pako.inflate(atob(text).split('').map(x => x.charCodeAt(0)), {toText: true}))
   }
 
   // make the provided dashboard active
